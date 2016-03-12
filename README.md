@@ -1,2 +1,2 @@
-# FSharp.Object.DIff
+# FSharp.Object.Diff
 
