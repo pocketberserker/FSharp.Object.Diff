@@ -41,6 +41,8 @@ type CollectionItemElementSelector(item: obj, identityStrategy: IdentityStrategy
 
   member internal __.Item = item
 
+  member __.WithIdentityStrategy(identityStrategy) = CollectionItemElementSelector(item, identityStrategy)
+
   override __.HumanReadableString =
     "[" + String.toSingleLineString item + "]"
 

@@ -1,5 +1,6 @@
 ﻿namespace FSharp.Object.Diff
 
+[<AllowNullLiteral>]
 type IdentityStrategy =
   abstract member Equals: obj * obj -> bool
 
