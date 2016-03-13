@@ -46,6 +46,7 @@
     <Compile Include="IdentityStrategy.fs" />
     <Compile Include="ElementSelector.fs" />
     <Compile Include="Accessor.fs" />
+    <Compile Include="NodePath.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
