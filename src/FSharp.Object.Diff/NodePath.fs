@@ -67,14 +67,17 @@ and NodePath(elementSelectors: ElementSelector list) =
 
   override __.ToString() =
     let builder = StringBuilder()
-    let rec loop (previous: ElementSelector option) selectors =
+    let rec loop (previous: ElementSelector option) (selectors: ElementSelector list) =
       match previous, selectors with
       | _, [] -> ()
-      | Some p, x :: xs when (p :? RootElementSelector) ->
-        bprintf builder "%O" x
-        loop (Some x) xs
       | _, x :: xs when (x :? RootElementSelector) ->
         builder.Append("/") |> ignore
+        loop (Some x) xs
+      | _, x :: xs when (x :? CollectionItemElementSelector) || (x :? MapKeyElementSelector) ->
+        bprintf builder "%O" x
+        loop (Some x) xs
+      | Some p, x :: xs when (p :? RootElementSelector) ->
+        bprintf builder "%O" x
         loop (Some x) xs
       | _, x :: xs ->
         bprintf builder "/%O" x
