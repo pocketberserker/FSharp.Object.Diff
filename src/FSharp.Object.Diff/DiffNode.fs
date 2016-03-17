@@ -34,7 +34,7 @@ type NodeVisit() =
   let mutable state = Continue
   member __.State = state
   member __.Stop() = state <- Stopped
-  member __.DontGoDeeper() = ContinueButDoNotGoDeeper
+  member __.DontGoDeeper() = state <- ContinueButDoNotGoDeeper
   member __.IsAllowedToGoDeeper = state = Continue
 
 exception StopVisitationException
