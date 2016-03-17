@@ -17,6 +17,7 @@ type PublicNoArgsConstructorInstanceFactory() =
           e
         )
 
+[<AllowNullLiteral>]
 type TypeInfo(typ: Type) =
   let accessors = ResizeArray()
   let mutable instanceFactory: InstanceFactory = null

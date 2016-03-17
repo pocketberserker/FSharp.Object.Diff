@@ -35,7 +35,7 @@ and internal AppendableBuilderImpl(elementSelectors: ResizeArray<ElementSelector
         raise <| InvalidOperationException("A property path cannot contain multiple root elements")
       | elementSelectors -> NodePath(elementSelectors)
 
-and NodePath(elementSelectors: ElementSelector list) =
+and [<AllowNullLiteral>] NodePath(elementSelectors: ElementSelector list) =
 
   member __.ElementSelectors = elementSelectors
 
@@ -85,21 +85,21 @@ and NodePath(elementSelectors: ElementSelector list) =
     loop None elementSelectors
     builder.ToString()
 
-  member __.StartBuildingFrom(nodePath: NodePath) =
+  static member StartBuildingFrom(nodePath: NodePath) =
     AppendableBuilderImpl(ResizeArray(nodePath.ElementSelectors))
     :> AppendableBuilder
 
-  member __.StartBuilding() =
+  static member StartBuilding() =
     let elementSelectors = ResizeArray()
     elementSelectors.Add(RootElementSelector.Instance :> ElementSelector)
     AppendableBuilderImpl(elementSelectors)
     :> AppendableBuilder
 
-  member this.With(propertyName: string, [<ParamArray>] additionalPropertyNames) =
-    this.StartBuilding()
+  static member With(propertyName: string, [<ParamArray>] additionalPropertyNames) =
+    NodePath.StartBuilding()
       .PropertyName(propertyName, additionalPropertyNames)
       .Build()
 
-  member this.WithRoot() = this.StartBuilding().Build()
+  static member WithRoot() = NodePath.StartBuilding().Build()
 
   member this.Matches(nodePath: NodePath) = nodePath.Equals(this)

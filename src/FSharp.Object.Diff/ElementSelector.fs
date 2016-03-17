@@ -10,7 +10,7 @@ type ElementSelector() =
 type RootElementSelector private () =
   inherit ElementSelector()
   static let instance = RootElementSelector()
-  static member Instance = instance
+  static member Instance = instance :> ElementSelector
   override __.HumanReadableString = ""
   override this.Equals(other) =
     match other with

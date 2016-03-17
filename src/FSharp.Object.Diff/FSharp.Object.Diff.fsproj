@@ -48,6 +48,7 @@
     <Compile Include="Accessor.fs" />
     <Compile Include="NodePath.fs" />
     <Compile Include="TypeInfo.fs" />
+    <Compile Include="DiffNode.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
