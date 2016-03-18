@@ -51,6 +51,7 @@
     <Compile Include="DiffNode.fs" />
     <Compile Include="Visitor.fs" />
     <Compile Include="Category.fs" />
+    <Compile Include="Circular.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
