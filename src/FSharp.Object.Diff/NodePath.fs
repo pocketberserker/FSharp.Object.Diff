@@ -91,7 +91,7 @@ and [<AllowNullLiteral>] NodePath(elementSelectors: ElementSelector list) =
 
   static member StartBuilding() =
     let elementSelectors = ResizeArray()
-    elementSelectors.Add(RootElementSelector.Instance :> ElementSelector)
+    elementSelectors.Add(RootElementSelector.Instance)
     AppendableBuilderImpl(elementSelectors)
     :> AppendableBuilder
 

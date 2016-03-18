@@ -13,7 +13,7 @@ type RootAccessor = RootAccessor
 with
   override __.ToString() = "root element"
   interface Accessor with
-    member __.ElementSelector = RootElementSelector.Instance :> ElementSelector
+    member __.ElementSelector = RootElementSelector.Instance
     member __.Get(target) = target
     member __.Set(_, _) = raise <| NotSupportedException()
     member __.Unset(_) = raise <| NotSupportedException()
