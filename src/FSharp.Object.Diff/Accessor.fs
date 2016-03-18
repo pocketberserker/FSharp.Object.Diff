@@ -114,3 +114,63 @@ type MapEntryAccessor(referenceKey: obj) =
       let target = objectToDictionary target
       if target <> null then
         target.Remove(referenceKey) |> ignore
+
+type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
+
+  static member Of(sourceAccessor: Accessor, working: 'T, base_: 'T, fresh: 'T) =
+    Instances(sourceAccessor, working, base_, fresh)
+
+  member __.SourceAccessor = sourceAccessor
+
+  member __.Access(accessor: Accessor) =
+    Instances(accessor, accessor.Get(working), accessor.Get(base_), accessor.Get(fresh))
+
+  member __.Working = working
+  member __.GetWorking(typ: Type) = if working <> null then Convert.ChangeType(working, typ) else null
+  member __.Base = base_
+  member __.GetBase(typ: Type) = if base_ <> null then Convert.ChangeType(base_, typ) else null
+  member __.Fresh: obj =
+//    if fresh = null then
+//      if isPrimitiveNumericType () then 0
+//      elif isPrimitiveBooleanType () then false
+//      else fresh
+//    else
+      fresh
+  member this.GetFresh(typ: Type) =
+    let o = this.Fresh
+    if o <> null then Convert.ChangeType(o, typ)
+    else null
+
+  member __.TryToGetTypeFromSourceAccessor() =
+    match sourceAccessor with
+    | :? TypeAwareAccessor as accessor -> accessor.Type
+    | _ -> null
+
+  member __.AreEqual() = obj.IsEqual(base_, working)
+  member __.AreSame() = Object.ReferenceEquals(working, base_)
+  member __.AreNull() = working = null && base_ = null
+
+  member this.Type =
+    let types = Type.TypesOf(working, base_, fresh)
+    let raise () =
+      types
+      |> sprintf "Detected instances of different types %A. Instances must either be null or have the exact same type."
+      |> ArgumentException
+      |> raise
+    let sourceAccessorType = this.TryToGetTypeFromSourceAccessor()
+    if sourceAccessorType.IsPrimitive then sourceAccessorType
+    elif Seq.isEmpty types then null
+    elif Seq.length types = 1 then
+      types |> Seq.head
+    elif Seq.length types > 1 then
+      // TODO: implement
+      raise ()
+    else raise()
+
+  member this.IsPrimitiveType = this.Type <> null && this.Type.IsPrimitive
+
+  member this.HasBeenAdded() =
+    if working <> null && base_ = null then true
+    elif this.IsPrimitiveType && Object.IsEqual(this.Fresh, working) && (not <| Object.IsEqual(base_, working)) then true
+    else false
+
