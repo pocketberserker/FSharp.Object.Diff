@@ -6,6 +6,7 @@ open System.Reflection
 type IsIntrospectableResolver =
   abstract member IsIntrospectable: DiffNode -> bool
 
+[<AllowNullLiteral>]
 type Introspector =
   abstract member Introspect: Type -> TypeInfo
 
@@ -87,3 +88,7 @@ with
 //        typeInfo.AddPropertyAccessor(PropertyAccessor(x.Name, x.GetGetMethod(), x.GetSetMethod()))
 //      )
       typeInfo
+
+type IntrospectionServiceIntrospectionMode =
+  | Enabled
+  | Disabled

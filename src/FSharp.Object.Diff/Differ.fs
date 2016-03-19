@@ -125,10 +125,10 @@ type DifferDispatcher(
 
 [<Sealed>]
 type BeanDiffer(
+                differDispatcher: DifferDispatcher,
                 isIntrospectableResolver: IsIntrospectableResolver,
                 isReturnableResolver: IsReturnableResolver,
                 comparisonStrategyResolver: ComparisonStrategyResolver,
-                differDispatcher: DifferDispatcher,
                 typeInfoResolver: TypeInfoResolver
   ) =
 

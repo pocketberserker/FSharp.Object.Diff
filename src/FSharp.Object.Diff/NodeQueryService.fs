@@ -24,3 +24,6 @@ type DefaultNodeQueryService(
     member __.IsReturnable(node) = returnableResolver.IsReturnable(node)
     member __.ResolveComparisonStrategy(node) = comparisonStrategyResolver.ResolveComparisonStrategy(node)
     member __.ResolvePrimitiveDefaultValueMode(node) = primitiveDefaultValueModeResolver.ResolvePrimitiveDefaultValueMode(node)
+
+type DifferFactory =
+  abstract member CreateDiffer: DifferDispatcher * NodeQueryService -> Differ

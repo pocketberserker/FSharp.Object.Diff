@@ -119,7 +119,7 @@ type NodePathInclusionResolver() =
         else Default
 
   member __.SetInclusion(nodePath, inclusion) =
-    inclusions.GetNodeForPath(nodePath).Value <- inclusion
+    inclusions.GetNodeForPath(nodePath).Value <- Some inclusion
     containsIncluded <- inclusions.ContainsValue(Included)
     containsExcluded <- inclusions.ContainsValue(Excluded)
 
@@ -166,8 +166,8 @@ type TypeInclusionResolver() =
 
   let isInactive () = not (containsIncluded || containsExcluded)
 
-  member __.SetInclusion(propertyName, inclusion) =
-    typeInclusions.Add(propertyName, inclusion)
+  member __.SetInclusion(typ, inclusion) =
+    typeInclusions.Add(typ, inclusion)
     containsIncluded <- typeInclusions.ContainsValue(Included)
     containsExcluded <- typeInclusions.ContainsValue(Excluded)
 
@@ -184,11 +184,6 @@ type TypeInclusionResolver() =
           | _ -> Default
 
     member __.EnablesStrictIncludeMode() = containsIncluded
-
-type PropertyId = {
-  Type: Type
-  Property: string
-}
 
 type TypePropertyConfigInclusionResolver() =
 
