@@ -63,6 +63,7 @@
     <Compile Include="ObjectDiffer.fs" />
     <Compile Include="NodeQueryService.fs" />
     <Compile Include="ObjectDifferBuilder.fs" />
+    <Compile Include="ObjectMerger.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
