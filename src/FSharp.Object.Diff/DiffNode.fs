@@ -240,3 +240,8 @@ and [<AllowNullLiteral>] DiffNode(parentNode: DiffNode, accessor: Accessor, valu
       bprintf sb ", categorized as %A" this.Categories
     bprintf sb ", accessed via %O)" accessor
     sb.ToString()
+
+  member __.IsProperyAware = accessor :? PropertyAwareAccessor
+
+type IdentityStrategyResolver =
+  abstract member ResolveIdentityStrategy: DiffNode -> IdentityStrategy

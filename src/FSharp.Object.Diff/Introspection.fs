@@ -28,6 +28,7 @@ type PropertyWriteException(propertyName: string, targetType: Type, newValue: ob
     sprintf "Failed to write new value '%A' to property '%s' of type '%s'" newValue propertyName targetType.FullName
   member __.NewValue = newValue
 
+[<AllowNullLiteral>]
 type PropertyAccessExceptionHandler =
   abstract member OnPropertyReadException: PropertyReadException * DiffNode -> unit
 

@@ -6,6 +6,7 @@ type PrimitiveDefaultValueMode =
   | Assigned
   | UnAssigned
 
+[<AllowNullLiteral>]
 type ComparisonStrategy =
   abstract member Compare: DiffNode * obj * obj -> unit
 
