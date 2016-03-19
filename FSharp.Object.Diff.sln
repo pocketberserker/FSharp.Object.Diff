@@ -7,6 +7,10 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharp.Object.Diff", "src\F
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharp.Object.Diff.Tests", "tests\FSharp.Object.Diff.Tests\FSharp.Object.Diff.Tests.fsproj", "{D3B59EE1-0232-4AAD-9093-2A6554140B2D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{5DED9C98-686F-4708-BBDD-28FB440CC63C}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Examples", "examples\Examples\Examples.fsproj", "{B0A41FAD-137D-42B6-963E-D5F4D3FEF779}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,8 +25,15 @@ Global
 		{D3B59EE1-0232-4AAD-9093-2A6554140B2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3B59EE1-0232-4AAD-9093-2A6554140B2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3B59EE1-0232-4AAD-9093-2A6554140B2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0A41FAD-137D-42B6-963E-D5F4D3FEF779}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0A41FAD-137D-42B6-963E-D5F4D3FEF779}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0A41FAD-137D-42B6-963E-D5F4D3FEF779}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0A41FAD-137D-42B6-963E-D5F4D3FEF779}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B0A41FAD-137D-42B6-963E-D5F4D3FEF779} = {5DED9C98-686F-4708-BBDD-28FB440CC63C}
 	EndGlobalSection
 EndGlobal
