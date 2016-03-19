@@ -17,8 +17,6 @@ type Type with
     let ctor =
       try
         typeof<'T>.GetConstructor(BindingFlags.Public ||| BindingFlags.NonPublic, null, [||], null)
-        |> Some
-      with _ -> None
-    match ctor with
-    | Some ctor -> ctor.Invoke([||])
-    | None -> null
+      with _ -> null
+    if ctor <> null then ctor.Invoke([||])
+    else null
