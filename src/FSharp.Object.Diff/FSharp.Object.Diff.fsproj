@@ -59,6 +59,7 @@
     <Compile Include="Filtering.fs" />
     <Compile Include="Inclusion.fs" />
     <Compile Include="Differ.fs" />
+    <Compile Include="ObjectDiffer.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

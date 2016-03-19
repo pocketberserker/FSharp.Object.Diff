@@ -120,6 +120,14 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
   static member Of(sourceAccessor: Accessor, working: 'T, base_: 'T, fresh: 'T) =
     Instances(sourceAccessor, working, base_, fresh)
 
+  static member Of(sourceAccessor: Accessor, working: 'T, base_: 'T) =
+    let fresh = if working <> null then Type.FreshInstanceOf<'T>() else null
+    Instances(sourceAccessor, working, base_, fresh)
+
+  static member Of(working: 'T, base_: 'T) =
+    let fresh = if working <> null then Type.FreshInstanceOf<'T>() else null
+    Instances(RootAccessor, working, base_, fresh)
+
   member __.SourceAccessor = sourceAccessor
 
   member __.Access(accessor: Accessor) =
