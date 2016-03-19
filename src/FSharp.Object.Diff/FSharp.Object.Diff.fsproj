@@ -56,6 +56,7 @@
     <Compile Include="Circular.fs" />
     <Compile Include="Comparison.fs" />
     <Compile Include="Introspection.fs" />
+    <Compile Include="Filtering.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
