@@ -12,7 +12,7 @@ type Differ =
 type PrimitiveDiffer(primitiveDefaultValueModeResolver: PrimitiveDefaultValueModeResolver) =
   let shouldTreatPrimitiveDefaultsAsUnassigned node =
     primitiveDefaultValueModeResolver.ResolvePrimitiveDefaultValueMode(node) = UnAssigned
-  member __.Accepts(typ: Type) = typ.IsPrimitive
+  member __.Accepts(typ: Type) = typ <> null && typ.IsPrimitive
   interface Differ with
     member this.Accepts(typ: Type) = this.Accepts(typ)
     member this.Compare(parentNode, instances) =

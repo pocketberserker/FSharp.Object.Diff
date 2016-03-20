@@ -72,7 +72,7 @@ and IntrospectionService(objectDifferBuilder: ObjectDifferBuilder) =
     :> PropertyAccessExceptionHandler
 
   let isPrimitiveTypeEnumOrArray (typ: Type) =
-    typ.IsPrimitive || typ.IsArray || typ.IsEnum
+    typ <> null && (typ.IsPrimitive || typ.IsArray || typ.IsEnum)
 
   member __.IntrospectorForNode(node: DiffNode) =
     match typeIntrospectorMap.TryGetValue(node.Type) with
