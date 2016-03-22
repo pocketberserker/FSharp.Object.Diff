@@ -17,6 +17,8 @@ let ``toSingleLineString`` () =
       (" aaa ", "aaa")
       (" aaa\nbbb ", @"aaa \\ bbb")
       (" aaa \n bbb ", @"aaa \\ bbb")
+      ("\naaa\nbbb\nccc\n", @"aaa \\ bbb \\ ccc") // head newline and tail new line are trimed before replacing
+      ("aaa\n\nbbb", @"aaa \\ bbb") // \s eats \n (This behavior may be bug from original project)
     ]
     run test
   }
