@@ -13,7 +13,12 @@ and CategoryConfigurer =
 
 and CategoryService(objectDifferBuilder: ObjectDifferBuilder) =
 
+  let nodePathCategories = NodePathValueHolder<string []>()
   let typeCategories = Dictionary<Type, string []>()
+
+  let categoriesFromNodePathConfiguration (node: DiffNode) =
+    nodePathCategories.AccumulatedValuesForNodePath(node.Path)
+    |> List.fold (fun s c -> c |> Set.ofArray |> Set.union s) Set.empty
 
   let categoriesFromTypeConfiguration (node: DiffNode) =
     match node.Type with
@@ -27,11 +32,11 @@ and CategoryService(objectDifferBuilder: ObjectDifferBuilder) =
 
   interface CategoryConfigurer with
     member __.And() = objectDifferBuilder
-    member this.OfNode(arg1) =
+    member this.OfNode(nodePath) =
       { new CategoryConfigurerOf with
         member __.ToBe([<ParamArrayAttribute>] categories) =
-          raise <| NotImplementedException()
-          //this :> CategoryConfigurer
+          nodePathCategories.Put(nodePath, Some categories) |> ignore
+          this :> CategoryConfigurer
       }
     member this.OfType(typ: Type) =
       { new CategoryConfigurerOf with
@@ -43,7 +48,7 @@ and CategoryService(objectDifferBuilder: ObjectDifferBuilder) =
   interface CategoryResolver with
     member __.ResolveCategories(node) =
       Set.unionMany (seq {
-        //yield categoriesFromNodePathConfiguration node
+        yield categoriesFromNodePathConfiguration node
         yield categoriesFromTypeConfiguration node
         yield categoriesFromNode node
       })
@@ -63,6 +68,8 @@ and IntrospectionConfigurer =
 
 and IntrospectionService(objectDifferBuilder: ObjectDifferBuilder) =
 
+  let nodePathIntrospectorHolder = NodePathValueHolder<Introspector>()
+  let nodePathIntrospectionModeHolder = NodePathValueHolder<IntrospectionServiceIntrospectionMode>()
   let typeIntrospectorMap = Dictionary<Type, Introspector>()
   let typeIntrospectionModeMap = Dictionary<Type, IntrospectionServiceIntrospectionMode>()
   let instanceFactory = PublicNoArgsConstructorInstanceFactory()
@@ -78,17 +85,35 @@ and IntrospectionService(objectDifferBuilder: ObjectDifferBuilder) =
     match typeIntrospectorMap.TryGetValue(node.Type) with
     | true, introspector -> introspector
     | false, _ ->
-      match defaultIntrospector with
-      | null -> StandardIntrospector :> Introspector
-      | _ -> defaultIntrospector
+      match nodePathIntrospectorHolder.ValueForNodePath(node.Path) with
+      | Some nodePathIntrospector -> nodePathIntrospector
+      | None ->
+        if defaultIntrospector = null then
+          defaultIntrospector <- StandardIntrospector
+        defaultIntrospector
 
   interface IntrospectionConfigurer with
     member __.And() = objectDifferBuilder
-    member __.OfNode(path) = failwith "Not implemented yet"
+    member this.OfNode(path) =
+      { new IntrospectionConfigurerOf with
+        member __.ToBeDisabled() =
+          nodePathIntrospectionModeHolder.Put(path, Some Disabled) |> ignore
+          this :> IntrospectionConfigurer
+        member __.ToBeEnabled() =
+          nodePathIntrospectionModeHolder.Put(path, Some Enabled) |> ignore
+          this :> IntrospectionConfigurer
+        member __.ToUse(introspector) =
+          nodePathIntrospectorHolder.Put(path, Some introspector) |> ignore
+          this :> IntrospectionConfigurer
+      }
     member this.OfType(typ) =
       { new IntrospectionConfigurerOf with
-        member __.ToBeDisabled() = failwith "Not implemented yet"
-        member __.ToBeEnabled() = failwith "Not implemented yet"
+        member __.ToBeDisabled() =
+          typeIntrospectionModeMap.Add(typ, Disabled)
+          this :> IntrospectionConfigurer
+        member __.ToBeEnabled() =
+          typeIntrospectionModeMap.Add(typ, Enabled)
+          this :> IntrospectionConfigurer
         member __.ToUse(introspector) =
           typeIntrospectorMap.Add(typ, introspector)
           this :> IntrospectionConfigurer
@@ -302,16 +327,17 @@ and ComparisonConfigurer =
 
 and ComparisonService(objectDifferBuilder: ObjectDifferBuilder) =
 
+  let nodePathComparisonStrategies = NodePathValueHolder<ComparisonStrategy>()
   let typeComparisonStrategyMap = Dictionary<Type, ComparisonStrategy>()
   let primitiveDefaultValueMode =  ref UnAssigned
 
   interface ComparisonConfigurer with
     member __.And() = objectDifferBuilder
-    member __.OfNode(nodePath) = failwith "Not implemented yet"
+    member __.OfNode(nodePath) = failwith "TODO: implement"
     member this.OfPrimitiveTyoes() =
       ComparisonConfigurerOfPrimitiveTypesImpl(primitiveDefaultValueMode, this)
       :> ComparisonConfigurerOfPrimitiveTypes
-    member __.OfTyoe(typ) = failwith "Not implemented yet"
+    member __.OfTyoe(typ) = failwith "TODO: implement"
   
   interface ComparisonStrategyResolver with
     member __.ResolveComparisonStrategy(node) =
@@ -319,8 +345,23 @@ and ComparisonService(objectDifferBuilder: ObjectDifferBuilder) =
       match typeComparisonStrategyMap.TryGetValue(valueType) with
       | true, v -> v
       | false, _ ->
-        // TODO: implement
-        null
+        match nodePathComparisonStrategies.ValueForNodePath(node.Path) with
+        | Some comparisonStrategy -> comparisonStrategy
+        | None ->
+          let valeuType = node.Type
+          match typeComparisonStrategyMap.TryGetValue(valueType) with
+          | true, v -> v
+          | false, _ ->
+            // TODO: implement
+//            if valueType.IsSimple then
+//              if valueType.IsComparableType then COMPARABLE_COMPARISON_STRATEGY else EQUALS_ONLY_COMPARISON_STRATEGY
+//            else
+//              let comparisonStrategyResolver = ObjectDiffPropertyComparisonStrategyResolver.Instance
+//              let comparisonStrategyFromObjectDiffPropertyAttribute = comparisonStrategyResolver.ComparisonStrategyForAttribute(objectDiffProperty)
+//              if comparisonStrategyFromObjectDiffPropertyAnnotation <> null then comparisonStrategyFromObjectDiffPropertyAttribute
+//              elif valueType <> null
+//              else
+                null
   
   interface PrimitiveDefaultValueModeResolver with
     member __.ResolvePrimitiveDefaultValueMode(_) = !primitiveDefaultValueMode

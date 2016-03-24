@@ -2,6 +2,7 @@
 
 open System
 open System.Text
+open System.Collections.Generic
 open Printf
 
 type AppendableBuilder =
@@ -103,3 +104,85 @@ and [<AllowNullLiteral>] NodePath(elementSelectors: ElementSelector list) =
   static member WithRoot() = NodePath.StartBuilding().Build()
 
   member this.Matches(nodePath: NodePath) = nodePath.Equals(this)
+
+type NodePathValueHolderCollector<'T> =
+  abstract member It: NodePath * 'T -> unit
+
+[<Obsolete("The ConfigNode provides a much more powerful way to store values for NodePaths.")>]
+type NodePathValueHolder<'T when 'T : equality>() =
+
+  let mutable value: 'T option = None
+  let elementValueHolders = Dictionary<ElementSelector, NodePathValueHolder<'T>>()
+
+  let valueHolderForElementSelector selector =
+    match elementValueHolders.TryGetValue(selector) with
+    | true, value -> Some value
+    | false, _ -> None
+
+  let rec put elementSelectors value =
+    match elementSelectors with
+    | [] -> ()
+    | x::xs ->
+      let nodePathValueHolder =
+        match valueHolderForElementSelector x with
+        | None ->
+          let nodePathValueHolder = NodePathValueHolder<'T>()
+          elementValueHolders.Add(x, nodePathValueHolder)
+          nodePathValueHolder
+        | Some v -> v
+      match xs with
+      | [] -> nodePathValueHolder.Value <- value
+      | _ -> put xs value
+
+  member this.Put(nodePath:NodePath, value) =
+    put nodePath.ElementSelectors value
+    this
+
+  member internal __.Value with get() = value and set(v) = value <- v
+
+  member private __.Visit(acc: ResizeArray<'T>, selectors) =
+    value |> Option.iter acc.Add
+    match selectors with
+    | x::xs ->
+      match valueHolderForElementSelector(x) with
+      | Some valueHolder -> valueHolder.Visit(acc, xs)
+      | None -> None
+    | _ -> value
+
+  member this.ValueForNodePath(nodePath: NodePath) =
+    this.Visit(ResizeArray(), nodePath.ElementSelectors)
+
+  member this.AccumulatedValuesForNodePath(nodePath: NodePath) =
+    let acc = ResizeArray()
+    this.Visit(acc, nodePath.ElementSelectors) |> ignore
+    List.ofSeq acc
+
+  member __.ContainsValue(v) =
+    match value with
+    | Some value when value = v -> true
+    | _ ->
+      elementValueHolders.Values
+      |> Seq.exists (fun e -> e.ContainsValue(v))
+
+  member private __.Collect(nodePath: NodePath option, collector: NodePathValueHolderCollector<_>) =
+    match nodePath, value with
+    | Some nodePath, Some value -> collector.It(nodePath, value)
+    | _ ->
+      for KeyValue(elementSelector, valueHolder) in elementValueHolders do
+        let childNodePath =
+          match elementSelector with
+          | :? RootElementSelector -> NodePath.WithRoot()
+          | _ -> NodePath.StartBuildingFrom(match nodePath with None -> null | Some n -> n).Element(elementSelector).Build()
+        valueHolder.Collect(Some childNodePath, collector)
+
+  member this.Collect(collector) =
+    this.Collect(None, collector)
+
+  override this.ToString() =
+    let sb = StringBuilder()
+    this.Collect({ new NodePathValueHolderCollector<_> with
+      member __.It(path, value) =
+        bprintf sb "%A => %A" path value
+        sb.AppendLine() |> ignore
+    })
+    sb.ToString()
