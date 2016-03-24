@@ -72,7 +72,7 @@ and IntrospectionService(objectDifferBuilder: ObjectDifferBuilder) =
   let nodePathIntrospectionModeHolder = NodePathValueHolder<IntrospectionServiceIntrospectionMode>()
   let typeIntrospectorMap = Dictionary<Type, Introspector>()
   let typeIntrospectionModeMap = Dictionary<Type, IntrospectionServiceIntrospectionMode>()
-  let instanceFactory = PublicNoArgsConstructorInstanceFactory()
+  let mutable instanceFactory= PublicNoArgsConstructorInstanceFactory() :> InstanceFactory
   let mutable defaultIntrospector: Introspector = null
   let mutable defaultPropertyAccessExceptionHandler: PropertyAccessExceptionHandler =
     DefaultPropertyAccessExceptionHandler()
@@ -121,7 +121,9 @@ and IntrospectionService(objectDifferBuilder: ObjectDifferBuilder) =
     member this.SetDefaultIntrospector(introspector) =
       defaultIntrospector <- introspector
       this :> IntrospectionConfigurer
-    member __.SetInstanceFactory(instanceFactory) = failwith "Not implemented yet"
+    member this.SetInstanceFactory(factory) =
+      instanceFactory <- InstanceFactoryFallbackDecorator(factory)
+      this :> IntrospectionConfigurer
     member this.HandlePropertyAccessExceptionsUsing(exceptionHandler) =
       defaultPropertyAccessExceptionHandler <- exceptionHandler
       this :> IntrospectionConfigurer
