@@ -403,8 +403,12 @@ and CollectionItemIdentityService(identityConfigurer: IdentityConfigurer) =
   let typePropertyIdentityStrategyResolver = TypePropertyIdentityStrategyResolver()
 
   member __.ResolveIdentityStrategy(node: DiffNode) =
-    // TODO: implement
-    null
+    match typePropertyIdentityStrategyResolver.Resolve(node) with
+    | null ->
+      match nodePathIdentityStrategies.GetNodeForPath(node.Path).Value with
+      | Some s -> s
+      | None -> EqualsIdentityStrategy :> IdentityStrategy
+    | s -> s
 
   member __.OfCollectionItems(nodePath: NodePath) =
     CollectionItemIdentityServiceOfCollectionItemsByNodePath(nodePath, nodePathIdentityStrategies, identityConfigurer)
@@ -415,13 +419,7 @@ and CollectionItemIdentityService(identityConfigurer: IdentityConfigurer) =
     :> IdentityConfigurerOfCollectionItems
 
   interface IdentityStrategyResolver with
-    member this.ResolveIdentityStrategy(node) =
-      match typePropertyIdentityStrategyResolver.Resolve(node) with
-      | null ->
-        match nodePathIdentityStrategies.GetNodeForPath(node.Path).Value with
-        | Some s -> s
-        | None -> EqualsIdentityStrategy :> IdentityStrategy
-      | s -> s
+    member this.ResolveIdentityStrategy(node) = this.ResolveIdentityStrategy(node)
 
 and IdentityService(objectDifferBuilder: ObjectDifferBuilder) as this =
 
