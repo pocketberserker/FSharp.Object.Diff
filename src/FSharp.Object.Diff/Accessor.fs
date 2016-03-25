@@ -125,7 +125,10 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
     Instances(sourceAccessor, working, base_, fresh)
 
   static member Of(working: 'T, base_: 'T) =
-    let fresh = if working <> null then Type.FreshInstanceOf<'T>() else null
+    let fresh =
+      match box working with
+      | null -> null
+      | _ -> Type.FreshInstanceOf<'T>()
     Instances(RootAccessor, working, base_, fresh)
 
   member __.SourceAccessor = sourceAccessor
