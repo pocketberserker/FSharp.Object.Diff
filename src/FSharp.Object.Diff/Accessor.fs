@@ -140,12 +140,11 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
   member __.GetWorking(typ: Type) = if working <> null then Convert.ChangeType(working, typ) else null
   member __.Base = base_
   member __.GetBase(typ: Type) = if base_ <> null then Convert.ChangeType(base_, typ) else null
-  member __.Fresh: obj =
-//    if fresh = null then
-//      if isPrimitiveNumericType () then 0
-//      elif isPrimitiveBooleanType () then false
-//      else fresh
-//    else
+  member this.Fresh: obj =
+    if fresh = null then
+      if Type.isPrimitive this.Type then Activator.CreateInstance(this.Type)
+      else fresh
+    else
       fresh
   member this.GetFresh(typ: Type) =
     let o = this.Fresh
