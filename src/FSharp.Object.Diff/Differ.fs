@@ -19,9 +19,9 @@ type PrimitiveDiffer(primitiveDefaultValueModeResolver: PrimitiveDefaultValueMod
       if not <| this.Accepts(instances.Type) then
         raise <| ArgumentException("The primitive differ can only deal with primitive types.")
       let node = DiffNode(parentNode, instances.SourceAccessor, instances.Type)
-      if shouldTreatPrimitiveDefaultsAsUnassigned node && instances.HasBeenAdded() then
+      if shouldTreatPrimitiveDefaultsAsUnassigned node && instances.HasBeenAdded then
         node.State <- Added
-      elif shouldTreatPrimitiveDefaultsAsUnassigned node && instances.HasBeenAdded() then
+      elif shouldTreatPrimitiveDefaultsAsUnassigned node && instances.HasBeenAdded then
         node.State <- Removed
       elif not <| instances.AreEqual() then
         node.State <- Changed
@@ -157,10 +157,10 @@ type BeanDiffer(
       let beanNode = DiffNode(parentNode, instances.SourceAccessor, instances.Type)
       if instances.AreNull() || instances.AreSame() then
         beanNode.State <- Untouched
-      elif instances.HasBeenAdded() then
+      elif instances.HasBeenAdded then
         compareUsingAppropriateMethod beanNode instances
         beanNode.State <- Added
-      elif instances.HasBeenAdded() then
+      elif instances.HasBeenAdded then
         compareUsingAppropriateMethod beanNode instances
         beanNode.State <- Removed
       else compareUsingAppropriateMethod beanNode instances

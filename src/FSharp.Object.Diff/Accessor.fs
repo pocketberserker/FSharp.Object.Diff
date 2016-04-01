@@ -197,12 +197,12 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
 
   member this.IsPrimitiveType = this.Type <> null && this.Type.IsPrimitive
 
-  member this.HasBeenAdded() =
+  member this.HasBeenAdded =
     if working <> null && base_ = null then true
     elif this.IsPrimitiveType && Object.IsEqual(this.Fresh, base_) && (not <| Object.IsEqual(base_, working)) then true
     else false
 
-  member this.HasBeenRemoved() =
+  member this.HasBeenRemoved =
     if base_ <> null && working = null then true
     elif this.IsPrimitiveType && Object.IsEqual(this.Fresh, working) && (not <| Object.IsEqual(base_, working)) then true
     else false
