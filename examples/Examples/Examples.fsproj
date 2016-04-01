@@ -25,6 +25,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DocumentationFile>bin\Debug\Examples.XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
+    <StartArguments />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -47,6 +48,10 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SimpleNode.fs" />
+    <Compile Include="MapEntryValueAccess.fs" />
+    <Compile Include="CustomDiffer.fs" />
+    <Compile Include="EqualsOnlyValueProviderMethod.fs" />
     <Compile Include="Program.fs" />
     <None Include="App.config" />
   </ItemGroup>
