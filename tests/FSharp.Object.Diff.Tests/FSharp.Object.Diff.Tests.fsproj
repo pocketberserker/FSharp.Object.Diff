@@ -70,6 +70,8 @@
   <ItemGroup>
     <None Include="paket.references" />
     <Compile Include="StringsTest.fs" />
+    <Compile Include="Mock.fs" />
+    <Compile Include="AccessorTest.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

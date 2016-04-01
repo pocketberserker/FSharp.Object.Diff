@@ -62,29 +62,33 @@ type CollectionItemAccessor(referenceItem: obj, identityStrategy: IdentityStrate
     objectAsCollection target
     |> Seq.tryFind (fun item -> item <> null && identityStrategy.Equals(item, referenceItem))
 
-  member this.Get(target) =
+  member this.Get(target: obj) =
     match this.TryGet(target) with
     | Some o -> o
     | None -> null
 
-  member __.Unset(target) =
+  member __.Unset(target: obj) =
     let targetCollection = objectAsCollection target
     if targetCollection <> null then
       remove targetCollection
 
+  member this.Set(target: obj, value: obj) =
+    let targetCollection = objectAsCollection target
+    if targetCollection <> null then
+      let previous = this.Get(target)
+      if previous <> null then this.Unset(target)
+      targetCollection.Add(value)
+
   override this.ToString() =
     "collection item " + this.ElementSelector.ToString()
 
+  member __.Type = if referenceItem <> null then referenceItem.GetType() else null
+
   interface TypeAwareAccessor with
-    member __.Type = if referenceItem <> null then referenceItem.GetType() else null
+    member this.Type = this.Type
     member this.ElementSelector = this.ElementSelector
     member this.Get(target) = this.Get(target)
-    member this.Set(target, value) =
-      let targetCollection = objectAsCollection target
-      if targetCollection <> null then
-        let previous = this.Get(target)
-        if previous <> null then this.Unset(target)
-        targetCollection.Add(value)
+    member this.Set(target, value) = this.Set(target, value)
     member this.Unset(target) = this.Unset(target)
 
 type MapEntryAccessor(referenceKey: obj) =
@@ -99,21 +103,35 @@ type MapEntryAccessor(referenceKey: obj) =
   override this.ToString() =
     "map key " + this.ElementSelector.ToString()
 
+  member __.GetKey(target: Dictionary<obj, obj>) =
+    if target = null then null
+    else
+      match target.Keys |> Seq.tryFind ((=) referenceKey) with
+      | Some k -> k
+      | None -> null
+
+  member __.Get(target: obj) =
+    let target = objectToDictionary target
+    if target <> null then
+      target.[referenceKey]
+    else null
+
+  member __.Set(target: obj, value: obj) =
+    let target = objectToDictionary target
+    if target <> null then
+      if target.ContainsKey(referenceKey) then target.Remove(referenceKey) |> ignore
+      target.Add(referenceKey, value)
+
+  member __.Unset(target: obj) =
+    let target = objectToDictionary target
+    if target <> null then
+      target.Remove(referenceKey) |> ignore
+
   interface Accessor with
     member this.ElementSelector = this.ElementSelector
-    member __.Get(target) =
-      let target = objectToDictionary target
-      if target <> null then
-        target.[referenceKey]
-      else null
-    member __.Set(target, value) =
-      let target = objectToDictionary target
-      if target <> null then
-        target.Add(referenceKey, value)
-    member __.Unset(target) =
-      let target = objectToDictionary target
-      if target <> null then
-        target.Remove(referenceKey) |> ignore
+    member this.Get(target) = this.Get(target)
+    member this.Set(target, value) = this.Set(target, value)
+    member this.Unset(target) = this.Unset(target)
 
 type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
 

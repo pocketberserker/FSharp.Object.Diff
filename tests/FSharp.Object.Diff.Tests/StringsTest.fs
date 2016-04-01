@@ -1,4 +1,4 @@
-﻿module StringsTest
+﻿module FSharp.Object.Diff.Tests.StringsTest
 
 open Persimmon
 open UseTestNameByReflection

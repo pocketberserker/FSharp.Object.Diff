@@ -50,7 +50,7 @@ type CollectionItemElementSelector(item: obj, identityStrategy: IdentityStrategy
     match other with
     | null -> false
     | :? CollectionItemElementSelector as other ->
-      if this = other then true
+      if obj.ReferenceEquals(this, other) then true
       else
         if item <> null then identityStrategy.Equals(item, other.Item)
         else other.Item <> null
