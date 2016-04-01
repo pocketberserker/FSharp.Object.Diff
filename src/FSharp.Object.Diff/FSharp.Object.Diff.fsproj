@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Strings.fs" />
+    <Compile Include="Prelude.fs" />
     <Compile Include="Classes.fs" />
     <Compile Include="Objects.fs" />
     <Compile Include="IdentityStrategy.fs" />

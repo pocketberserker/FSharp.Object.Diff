@@ -143,7 +143,7 @@ type BeanDiffer(
   let compareUsingAppropriateMethod (beanNode: DiffNode) (instances: Instances) =
     let comparisonStrategy = comparisonStrategyResolver.ResolveComparisonStrategy(beanNode)
     if comparisonStrategy <> null then
-     comparisonStrategy.Compare(beanNode, instances.Working, instances.Base)
+     comparisonStrategy.Compare(beanNode, instances.Type, instances.Working, instances.Base)
     elif isIntrospectableResolver.IsIntrospectable(beanNode) then
       compareUsingIntrospection beanNode instances
 

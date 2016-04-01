@@ -8,7 +8,7 @@ type PrimitiveDefaultValueMode =
 
 [<AllowNullLiteral>]
 type ComparisonStrategy =
-  abstract member Compare: DiffNode * obj * obj -> unit
+  abstract member Compare: DiffNode * Type * obj * obj -> unit
 
 type ComparisonStrategyResolver =
   abstract member ResolveComparisonStrategy: DiffNode -> ComparisonStrategy
@@ -27,7 +27,7 @@ type EqualsOnlyComparisonStrategy(equalsValueProviderMethod: string) =
   new() = EqualsOnlyComparisonStrategy(null)
 
   interface ComparisonStrategy with
-    member __.Compare(node, working, base_) =
+    member __.Compare(node, _, working, base_) =
       let result =
         if equalsValueProviderMethod <> null then
           let workingValue = access working equalsValueProviderMethod
@@ -36,3 +36,12 @@ type EqualsOnlyComparisonStrategy(equalsValueProviderMethod: string) =
         else Object.IsEqual(working, base_)
       if result then node.State <- Untouched
       else node.State <- Changed
+
+type ComparableComparisonStrategy = ComparableComparisonStrategy
+with
+  interface ComparisonStrategy with
+    member __.Compare(node, typ, working, base_) =
+      if typeof<IComparable>.IsAssignableFrom(typ) then
+        if isEqualByComparison (working :?> IComparable) (base_ :?> IComparable) then
+          node.State <- Untouched
+        else node.State <- Changed
