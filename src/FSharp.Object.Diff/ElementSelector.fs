@@ -62,7 +62,7 @@ type CollectionItemElementSelector(item: obj, identityStrategy: IdentityStrategy
 type MapKeyElementSelector(key: obj) =
   inherit ElementSelector()
 
-  member internal __.Key = key
+  member __.Key = key
 
   override __.HumanReadableString =
     "{" + String.toSingleLineString key + "}"
