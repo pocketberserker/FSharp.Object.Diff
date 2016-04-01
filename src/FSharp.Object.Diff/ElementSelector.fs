@@ -14,7 +14,7 @@ type RootElementSelector private () =
   override __.HumanReadableString = ""
   override this.Equals(other) =
     match other with
-    | :? RootElementSelector as other when this = other -> true
+    | :? RootElementSelector as other when obj.ReferenceEquals(this, other) -> true
     | _ ->
       if other <> null && this.GetType() = other.GetType() then true
       else false
@@ -29,7 +29,7 @@ type BeanPropertyElementSelector(propertyName: string) =
     match other with
     | null -> false
     | :? BeanPropertyElementSelector as other ->
-      if this = other then true
+      if obj.ReferenceEquals(this, other) then true
       else this.PropertyName = other.PropertyName
     | _ -> false
   override __.GetHashCode() = hash propertyName
@@ -71,7 +71,7 @@ type MapKeyElementSelector(key: obj) =
     match other with
     | null -> false
     | :? MapKeyElementSelector as other ->
-      if this = other then true
+      if obj.ReferenceEquals(this, other) then true
       else
         if key <> null then key = other.Key
         else other.Key = null
