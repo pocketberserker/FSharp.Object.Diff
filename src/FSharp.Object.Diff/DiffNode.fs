@@ -243,5 +243,10 @@ and [<AllowNullLiteral>] DiffNode(parentNode: DiffNode, accessor: Accessor, valu
 
   member __.IsProperyAware = accessor :? PropertyAwareAccessor
 
+  member __.GetPropertyAttribute<'T when 'T :> Attribute and 'T : null>() =
+    match accessor with
+    | :? PropertyAwareAccessor as accessor -> accessor.GetReadMethodAttribute<'T>()
+    | _ -> null
+
 type IdentityStrategyResolver =
   abstract member ResolveIdentityStrategy: DiffNode -> IdentityStrategy

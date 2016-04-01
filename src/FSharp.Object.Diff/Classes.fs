@@ -50,3 +50,5 @@ module Type =
     elif isPrimitive typ then true
     elif typ = typeof<unit> then true
     else simpleTypes |> List.exists ((=) typ)
+
+  let isComparable typ = typeof<IComparable>.IsAssignableFrom(typ)

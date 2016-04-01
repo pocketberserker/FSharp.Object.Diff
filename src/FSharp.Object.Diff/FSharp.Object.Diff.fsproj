@@ -56,10 +56,10 @@
     <Compile Include="Visitor.fs" />
     <Compile Include="Category.fs" />
     <Compile Include="Circular.fs" />
-    <Compile Include="Comparison.fs" />
-    <Compile Include="Introspection.fs" />
-    <Compile Include="Filtering.fs" />
     <Compile Include="Inclusion.fs" />
+    <Compile Include="Introspection.fs" />
+    <Compile Include="Comparison.fs" />
+    <Compile Include="Filtering.fs" />
     <Compile Include="Differ.fs" />
     <Compile Include="ObjectDiffer.fs" />
     <Compile Include="NodeQueryService.fs" />

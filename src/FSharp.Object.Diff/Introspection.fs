@@ -92,3 +92,25 @@ with
 type IntrospectionServiceIntrospectionMode =
   | Enabled
   | Disabled
+
+[<AttributeUsage(AttributeTargets.Method, AllowMultiple = false); AllowNullLiteral>]
+type ObjectDiffPropertyAttribute() =
+  inherit Attribute()
+
+  let mutable inclusion = Default
+  let mutable equalsOnly = false
+  let mutable categories: string [] = [||]
+  let mutable equalsOnlyValueProviderMethod = ""
+
+  member __.Inclusion with get () = inclusion and set(v) = inclusion <- v
+  member __.EqualsOnly with get () = equalsOnly and set(v) = equalsOnly <- v
+  member __.Categories with get () = categories and set(v) = categories <- v
+  member __.EqualsOnlyValueProviderMethod with get () = equalsOnlyValueProviderMethod and set(v) = equalsOnlyValueProviderMethod <- v
+
+[<AttributeUsage(AttributeTargets.Class ||| AttributeTargets.Struct ||| AttributeTargets.Interface, AllowMultiple = false); AllowNullLiteral>]
+type ObjectDiffEqualsOnlyAttribute() =
+  inherit Attribute()
+
+  let mutable valueProviderMethod = ""
+
+  member __.ValueProviderMethod with get () = valueProviderMethod and set(v) = valueProviderMethod <- v

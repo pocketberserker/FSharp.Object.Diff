@@ -329,6 +329,7 @@ and ComparisonConfigurer =
 
 and ComparisonService(objectDifferBuilder: ObjectDifferBuilder) =
 
+  static let equalsOnlyComparisonStrategy = EqualsOnlyComparisonStrategy()
   let nodePathComparisonStrategies = NodePathValueHolder<ComparisonStrategy>()
   let typeComparisonStrategyMap = Dictionary<Type, ComparisonStrategy>()
   let primitiveDefaultValueMode =  ref UnAssigned
@@ -354,16 +355,23 @@ and ComparisonService(objectDifferBuilder: ObjectDifferBuilder) =
           match typeComparisonStrategyMap.TryGetValue(valueType) with
           | true, v -> v
           | false, _ ->
-            // TODO: implement
-//            if valueType.IsSimple then
-//              if valueType.IsComparableType then COMPARABLE_COMPARISON_STRATEGY else EQUALS_ONLY_COMPARISON_STRATEGY
-//            else
-//              let comparisonStrategyResolver = ObjectDiffPropertyComparisonStrategyResolver.Instance
-//              let comparisonStrategyFromObjectDiffPropertyAttribute = comparisonStrategyResolver.ComparisonStrategyForAttribute(objectDiffProperty)
-//              if comparisonStrategyFromObjectDiffPropertyAnnotation <> null then comparisonStrategyFromObjectDiffPropertyAttribute
-//              elif valueType <> null
-//              else
-                null
+            if Type.isSimple valueType then
+              if Type.isComparable valueType then ComparableComparisonStrategy :> ComparisonStrategy
+              else equalsOnlyComparisonStrategy :> ComparisonStrategy
+            else
+              let comparisonStrategyResolver = ObjectDiffPropertyComparisonStrategyResolver
+              let objectDiffProperty = node.GetPropertyAttribute<ObjectDiffPropertyAttribute>()
+              match comparisonStrategyResolver.ComparisonStrategyForAttribute(objectDiffProperty) with
+              | Some v -> v :> ComparisonStrategy
+              | None when valueType <> null ->
+                let objectDiffEqualsOnlyType =
+                  let xs = valueType.GetCustomAttributes(typeof<ObjectDiffEqualsOnlyAttribute>, false)
+                  if Array.isEmpty xs then null
+                  else xs.[0] :?> ObjectDiffEqualsOnlyAttribute
+                match comparisonStrategyResolver.ComparisonStrategyForAttribute(objectDiffEqualsOnlyType) with
+                | Some v -> v :> ComparisonStrategy
+                | None -> null
+              | None -> null
   
   interface PrimitiveDefaultValueModeResolver with
     member __.ResolvePrimitiveDefaultValueMode(_) = !primitiveDefaultValueMode

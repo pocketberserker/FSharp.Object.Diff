@@ -45,3 +45,16 @@ with
         if isEqualByComparison (working :?> IComparable) (base_ :?> IComparable) then
           node.State <- Untouched
         else node.State <- Changed
+
+type ObjectDiffPropertyComparisonStrategyResolver =  ObjectDiffPropertyComparisonStrategyResolver
+with
+  member __.ComparisonStrategyForAttribute(attr: ObjectDiffPropertyAttribute) =
+    if attr = null || not attr.EqualsOnly then None
+    elif not <| String.IsNullOrEmpty(attr.EqualsOnlyValueProviderMethod) then
+      Some(EqualsOnlyComparisonStrategy(attr.EqualsOnlyValueProviderMethod))
+    else Some(EqualsOnlyComparisonStrategy())
+  member __.ComparisonStrategyForAttribute(attr: ObjectDiffEqualsOnlyAttribute) =
+    if attr = null then None
+    elif not <| String.IsNullOrEmpty(attr.ValueProviderMethod) then
+      Some(EqualsOnlyComparisonStrategy(attr.ValueProviderMethod))
+    else Some(EqualsOnlyComparisonStrategy())
