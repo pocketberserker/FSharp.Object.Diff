@@ -134,7 +134,7 @@ and IntrospectionService(objectDifferBuilder: ObjectDifferBuilder) =
       | null -> false
       | typ ->
         if isPrimitiveTypeEnumOrArray typ then false
-        //elif nodePathIntrospectionModeHolder.ValueForNodePath(node.Path) = Disabled then false
+        elif nodePathIntrospectionModeHolder.ValueForNodePath(node.Path) = Some Disabled then false
         else
           match typeIntrospectionModeMap.TryGetValue(typ) with
           | true, Disabled -> false
