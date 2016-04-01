@@ -52,6 +52,7 @@
     <Compile Include="MapEntryValueAccess.fs" />
     <Compile Include="CustomDiffer.fs" />
     <Compile Include="EqualsOnlyValueProviderMethod.fs" />
+    <Compile Include="PhoneBook.fs" />
     <Compile Include="Program.fs" />
     <None Include="App.config" />
   </ItemGroup>

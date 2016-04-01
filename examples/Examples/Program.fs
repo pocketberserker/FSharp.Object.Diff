@@ -6,5 +6,6 @@ let main args =
   | [| "MapEntryValueAccess" |] -> MapEntryValueAccess.run ()
   | [| "CustomDiffer" |] -> CustomDiffer.run ()
   | [| "EqualsOnlyValueProviderMethod" |] -> EqualsOnlyValueProviderMethod.run ()
+  | [| "PhoneBook" |] -> PhoneBook.run ()
   | _ -> SimpleNode.run ()
   0
