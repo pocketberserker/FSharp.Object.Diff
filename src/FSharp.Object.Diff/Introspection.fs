@@ -48,7 +48,7 @@ type DefaultPropertyAccessExceptionHandler() =
   interface PropertyAccessExceptionHandler with
     member __.OnPropertyReadException(e, _) = raise e
 
-[<AttributeUsage(AttributeTargets.Method, AllowMultiple = false); AllowNullLiteral>]
+[<AttributeUsage(AttributeTargets.Method ||| AttributeTargets.Property, AllowMultiple = false); AllowNullLiteral>]
 type ObjectDiffPropertyAttribute() =
   inherit Attribute()
 
