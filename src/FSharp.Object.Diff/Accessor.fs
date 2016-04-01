@@ -169,7 +169,7 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
       |> ArgumentException
       |> raise
     let sourceAccessorType = this.TryToGetTypeFromSourceAccessor()
-    if sourceAccessorType <> null && sourceAccessorType.IsPrimitive then sourceAccessorType
+    if Type.isPrimitive sourceAccessorType then sourceAccessorType
     elif Seq.isEmpty types then null
     elif Seq.length types = 1 then
       types |> Seq.head

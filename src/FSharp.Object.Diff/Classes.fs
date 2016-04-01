@@ -20,3 +20,7 @@ type Type with
       with _ -> null
     if ctor <> null then ctor.Invoke([||])
     else null
+
+module Type =
+
+  let isPrimitive (typ: Type) = typ <> null && typ.IsPrimitive
