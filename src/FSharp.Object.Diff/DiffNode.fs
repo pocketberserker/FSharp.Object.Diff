@@ -221,9 +221,12 @@ and [<AllowNullLiteral>] DiffNode(parentNode: DiffNode, accessor: Accessor, valu
     let categories =
       if parentNode <> null then parentNode.Categories
       else Set.empty
-    // TODO: implement
-    //if accessor :? CategoryAware then
-    Set.union categories additionalCategories
+    match accessor with
+    | :? CategoryAware as accessor ->
+      accessor.GetCategoriesFromAttribute()
+      |> Set.union categories
+    | _ -> categories
+    |> Set.union additionalCategories
 
   override this.ToString() =
     let sb = StringBuilder()

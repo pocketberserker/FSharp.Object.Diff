@@ -312,6 +312,26 @@ and ComparisonConfigurerOf =
   abstract member ToUseEqualsMethodOfValueProvidedByMethod: string -> ComparisonConfigurer
   abstract member ToUseCompareToMethod: unit -> ComparisonConfigurer
 
+and [<AbstractClass>] ComparisonConfigurerAbstractOf() =
+  abstract member ToUse: ComparisonStrategy -> ComparisonConfigurer
+  interface ComparisonConfigurerOf with
+    member this.ToUse(comparisonStrategy) = this.ToUse(comparisonStrategy)
+    member this.ToUseEqualsMethod() = this.ToUse(EqualsOnlyComparisonStrategy())
+    member this.ToUseEqualsMethodOfValueProvidedByMethod(propertyName) = this.ToUse(EqualsOnlyComparisonStrategy(propertyName))
+    member this.ToUseCompareToMethod() = this.ToUse(ComparableComparisonStrategy)
+
+and ComparisonConfigurerOfType(comparisonConfigurer: ComparisonConfigurer, typ: Type, typeComparisonStrategyMap: Dictionary<Type, ComparisonStrategy>) =
+  inherit ComparisonConfigurerAbstractOf()
+  override __.ToUse(comparisonStrategy) =
+    typeComparisonStrategyMap.Add(typ, comparisonStrategy)
+    comparisonConfigurer
+
+and ComparisonConfigurerOfNodePath(comparisonConfigurer: ComparisonConfigurer, nodePath: NodePath, nodePathComparisonStrategies: NodePathValueHolder<ComparisonStrategy>) =
+  inherit ComparisonConfigurerAbstractOf()
+  override __.ToUse(comparisonStrategy) =
+    nodePathComparisonStrategies.Put(nodePath, Some comparisonStrategy) |> ignore
+    comparisonConfigurer
+
 and ComparisonConfigurerOfPrimitiveTypes =
   abstract member ToTreatDefaultValuesAs: PrimitiveDefaultValueMode -> ComparisonConfigurer
 
@@ -336,11 +356,15 @@ and ComparisonService(objectDifferBuilder: ObjectDifferBuilder) =
 
   interface ComparisonConfigurer with
     member __.And() = objectDifferBuilder
-    member __.OfNode(nodePath) = failwith "TODO: implement"
+    member this.OfNode(nodePath) =
+      ComparisonConfigurerOfNodePath(this, nodePath, nodePathComparisonStrategies)
+      :> ComparisonConfigurerOf
     member this.OfPrimitiveTyoes() =
       ComparisonConfigurerOfPrimitiveTypesImpl(primitiveDefaultValueMode, this)
       :> ComparisonConfigurerOfPrimitiveTypes
-    member __.OfTyoe(typ) = failwith "TODO: implement"
+    member this.OfTyoe(typ) =
+      ComparisonConfigurerOfType(this, typ, typeComparisonStrategyMap)
+      :> ComparisonConfigurerOf
   
   interface ComparisonStrategyResolver with
     member __.ResolveComparisonStrategy(node) =
