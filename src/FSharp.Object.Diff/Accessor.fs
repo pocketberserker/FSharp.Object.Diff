@@ -155,9 +155,9 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
     Instances(accessor, accessor.Get(working), accessor.Get(base_), accessor.Get(fresh))
 
   member __.Working = working
-  member __.GetWorking(typ: Type) = if working <> null then Convert.ChangeType(working, typ) else null
+  member __.TryGetWorking<'T>() = if working <> null then Some(working :?> 'T) else None
   member __.Base = base_
-  member __.GetBase(typ: Type) = if base_ <> null then Convert.ChangeType(base_, typ) else null
+  member __.TryGetBase<'T>() = if base_ <> null then Some(base_ :?> 'T) else None
   member this.Fresh: obj =
     if fresh = null then
       if Type.isPrimitive this.Type then Activator.CreateInstance(this.Type)
