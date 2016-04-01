@@ -2,6 +2,9 @@
 module FSharp.Object.Diff.TypeSyntax
 
 open System
+open System.Numerics
+open System.Text
+open System.Globalization
 open System.Reflection
 
 type Type with
@@ -24,3 +27,26 @@ type Type with
 module Type =
 
   let isPrimitive (typ: Type) = typ <> null && typ.IsPrimitive
+
+  let private simpleTypes = [
+    typeof<Type>
+    typeof<Uri>
+    typeof<CultureInfo>
+    typeof<RegionInfo>
+    // typeof<DateTimeFormatInfo> ???
+    // typeof<NumberFormatInfo> ???
+    typeof<Guid>
+
+    typeof<BigInteger>
+    typeof<string>
+    typeof<StringBuilder>
+    typeof<DateTime>
+    typeof<DateTimeOffset>
+    typeof<TimeSpan>
+  ]
+
+  let isSimple (typ: Type) =
+    if typ = null then false
+    elif isPrimitive typ then true
+    elif typ = typeof<unit> then true
+    else simpleTypes |> List.exists ((=) typ)
