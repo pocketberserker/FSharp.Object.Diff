@@ -105,6 +105,21 @@ and [<AllowNullLiteral>] NodePath(elementSelectors: ElementSelector list) =
 
   member this.Matches(nodePath: NodePath) = nodePath.Equals(this)
 
+  member this.CompareTo(other: NodePath) =
+    let distance = List.length this.ElementSelectors - List.length other.ElementSelectors
+    if distance = 0 then if this.Matches(other) then 0 else 1
+    elif distance > 0 then 1
+    else -1
+
+  interface IComparable<NodePath> with
+    member this.CompareTo(other) = this.CompareTo(other)
+
+  interface IComparable with
+    member this.CompareTo(other) =
+      match other with
+      | :? NodePath as other -> this.CompareTo(other)
+      | _ -> invalidArg "other" "cannot compare values of different types"
+
 type NodePathValueHolderCollector<'T> =
   abstract member It: NodePath * 'T -> unit
 
