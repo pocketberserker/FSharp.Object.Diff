@@ -100,8 +100,13 @@ and [<AllowNullLiteral>] DiffNode(parentNode: DiffNode, accessor: Accessor, valu
   member __.Child(elementSelector: ElementSelector) =
     match elementSelector with
     | :? CollectionItemElementSelector as elementSelector when childIdentityStrategy <> null ->
-      children.[elementSelector.WithIdentityStrategy(childIdentityStrategy)]
-    | _ -> children.[elementSelector]
+      match children.TryGetValue(elementSelector.WithIdentityStrategy(childIdentityStrategy)) with
+      | true, v -> v
+      | false, _ -> null
+    | _ ->
+      match children.TryGetValue(elementSelector) with
+      | true, v -> v
+      | false, _ -> null
   member this.Child(propertyName) = this.Child(BeanPropertyElementSelector(propertyName))
   member this.Child(elementSelectors: ElementSelector list) =
     match elementSelectors with
