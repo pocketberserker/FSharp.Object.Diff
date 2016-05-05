@@ -167,3 +167,81 @@ type BeanDiffer(
     member this.Accepts(typ: Type) = this.Accepts(typ)
 
     member this.Compare(parentNode, instances) = this.Compare(parentNode, instances)
+
+[<Sealed>]
+type MapDiffer(differDispatcher: DifferDispatcher, comparisonStrategyResolver: ComparisonStrategyResolver) =
+
+  let findAddedKeys(instances: Instances) =
+    let source = instances.TryGetWorking<System.Collections.IDictionary>()
+    let filter = instances.TryGetBase<System.Collections.IDictionary>()
+    let xs = ResizeArray()
+    source |> Option.iter (fun s -> for k in s.Keys do xs.Add(k))
+    filter |> Option.iter (fun s -> for k in s.Keys do xs.Remove(k) |> ignore)
+    xs :> obj seq
+
+  let findRemovedKeys(instances: Instances) =
+    let source = instances.TryGetBase<System.Collections.IDictionary>()
+    let filter = instances.TryGetWorking<System.Collections.IDictionary>()
+    let xs = ResizeArray()
+    source |> Option.iter (fun s -> for k in s.Keys do xs.Add(k))
+    filter |> Option.iter (fun s -> for k in s.Keys do xs.Remove(k) |> ignore)
+    xs :> obj seq
+
+  let findKnownKeys(instances: Instances) =
+    match instances.TryGetBase<System.Collections.IDictionary>() with
+    | Some v ->
+      let xs = ResizeArray()
+      for k in v.Keys do
+        if not <| xs.Contains(k) then xs.Add(k)
+      xs
+      |> Seq.filter (fun x -> not (findAddedKeys instances |> Seq.exists ((=) x) || findRemovedKeys instances |> Seq.exists ((=) x)))
+    | None -> Seq.empty
+    
+  let compareEntries (mapNode: DiffNode) mapInstances keys =
+    for key in keys do
+      differDispatcher.Dispatch(mapNode, mapInstances, MapEntryAccessor(key)) |> ignore
+
+  member __.Compare(parentNode, instances: Instances) =
+    let mapNode = DiffNode(parentNode, instances.SourceAccessor, instances.Type)
+    if instances.HasBeenAdded then
+      match instances.TryGetWorking<System.Collections.IDictionary>() with
+      | Some v ->
+        let xs = ResizeArray()
+        for k in v.Keys do xs.Add(k)
+        xs :> obj seq
+      | None -> Seq.empty
+      |> compareEntries mapNode instances
+      mapNode.State <- Added
+    elif instances.HasBeenRemoved then
+      match instances.TryGetBase<System.Collections.IDictionary>() with
+      | Some v ->
+        let xs = ResizeArray()
+        for k in v.Keys do xs.Add(k)
+        xs :> obj seq
+      | None -> Seq.empty
+      |> compareEntries mapNode instances
+      mapNode.State <- Removed
+    elif instances.AreSame() then
+      mapNode.State <- Untouched
+    elif comparisonStrategyResolver.ResolveComparisonStrategy(mapNode) <> null then
+      comparisonStrategyResolver.ResolveComparisonStrategy(mapNode)
+        .Compare(
+          mapNode,
+          instances.Type,
+          (match instances.TryGetWorking<System.Collections.IDictionary>() with | Some v -> v | None -> null),
+          match instances.TryGetBase<System.Collections.IDictionary>() with | Some v -> v | None -> null)
+    else
+      findAddedKeys instances |> compareEntries mapNode instances
+      findRemovedKeys instances |> compareEntries mapNode instances
+      findKnownKeys instances |> compareEntries mapNode instances
+    mapNode
+
+  member __.Accepts(typ: Type)  =
+    if typ <> null then typeof<System.Collections.IDictionary>.IsAssignableFrom(typ)
+    else false
+  
+  interface Differ with
+
+    member this.Accepts(typ: Type) = this.Accepts(typ)
+
+    member this.Compare(parentNode, instances) = this.Compare(parentNode, instances)
