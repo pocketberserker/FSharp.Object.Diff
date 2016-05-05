@@ -4,7 +4,7 @@ open System
 open System.Collections.Generic
 
 type CategoryConfigurerOf =
-    abstract member ToBe: string[] -> CategoryConfigurer
+    abstract member ToBe: [<ParamArray>] categories: string[] -> CategoryConfigurer
 
 and CategoryConfigurer =
   abstract member OfNode: NodePath -> CategoryConfigurerOf
@@ -32,14 +32,14 @@ and CategoryService(objectDifferBuilder: ObjectDifferBuilder) =
 
   member this.OfNode(nodePath) = {
     new CategoryConfigurerOf with
-      member __.ToBe([<ParamArrayAttribute>] categories) =
+      member __.ToBe([<ParamArray>] categories) =
         nodePathCategories.Put(nodePath, Some categories) |> ignore
         this :> CategoryConfigurer
   }
 
   member this.OfType(typ: Type) = {
     new CategoryConfigurerOf with
-      member __.ToBe([<ParamArrayAttribute>] categories) =
+      member __.ToBe([<ParamArray>] categories) =
         typeCategories.Add(typ, categories)
         this :> CategoryConfigurer
   }

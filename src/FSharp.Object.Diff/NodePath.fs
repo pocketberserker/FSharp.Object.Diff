@@ -7,7 +7,7 @@ open Printf
 
 type AppendableBuilder =
   abstract member Element: ElementSelector -> AppendableBuilder
-  abstract member PropertyName: string * string [] -> AppendableBuilder
+  abstract member PropertyName: string * [<ParamArray>] names: string[] -> AppendableBuilder
   abstract member CollectionItem: 'T -> AppendableBuilder
   abstract member MapKey: 'T -> AppendableBuilder
   abstract member Build: unit -> NodePath

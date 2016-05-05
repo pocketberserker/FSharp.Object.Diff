@@ -39,13 +39,13 @@ let setupWithDefaultAccessor () =
 
 let ``resolveCategories: should return categories configured via path`` = test {
   let target = setupWithDefaultAccessor ()
-  target.CategoryService.OfNode(target.NodePath).ToBe([|"Stark"; "Lannister"|]) |> ignore
+  target.CategoryService.OfNode(target.NodePath).ToBe("Stark", "Lannister") |> ignore
   do! assertEquals (Set.ofList ["Stark"; "Lannister"]) (target.CategoryService.ResolveCategories(target.Node))
 }
 
 let ``resolveCategories: should return categories configured via type`` = test {
   let target = setupWithDefaultAccessor ()
-  target.CategoryService.OfType(target.NodeType).ToBe([|"Stark"; "Lannister"|]) |> ignore
+  target.CategoryService.OfType(target.NodeType).ToBe("Stark", "Lannister") |> ignore
   do! assertEquals (Set.ofList ["Stark"; "Lannister"]) (target.CategoryService.ResolveCategories(target.Node))
 }
 
@@ -66,8 +66,8 @@ let ``resolveCategories: should return combined categories configured via all po
       .SetupMethod(fun x -> <@ x.GetCategoriesFromAttribute @>).Returns(Set.ofList ["C"])
       .Create()
     |> setup
-  target.CategoryService.OfNode(target.NodePath).ToBe([|"A"|]) |> ignore
-  target.CategoryService.OfType(target.NodeType).ToBe([|"B"|]) |> ignore
+  target.CategoryService.OfNode(target.NodePath).ToBe("A") |> ignore
+  target.CategoryService.OfType(target.NodeType).ToBe("B") |> ignore
   do! assertEquals (Set.ofList ["A"; "B"; "C"]) (target.CategoryService.ResolveCategories(target.Node)) 
 }
 
@@ -78,7 +78,7 @@ let ``resolveCategories: should also return categories of parent nodes`` = test 
       .SetupMethod(fun x -> <@ x.GetCategoriesFromAttribute @>).Returns(Set.ofList ["B"])
       .Create()
     |> setup
-  target.CategoryService.OfNode(NodePath.WithRoot()).ToBe([|"A"|]) |> ignore
+  target.CategoryService.OfNode(NodePath.WithRoot()).ToBe("A") |> ignore
   do! assertEquals (Set.ofList ["A"; "B"]) (target.CategoryService.ResolveCategories(target.Node)) 
 }
 
