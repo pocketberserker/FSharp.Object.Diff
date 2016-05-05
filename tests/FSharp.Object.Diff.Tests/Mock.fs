@@ -1,6 +1,7 @@
 ﻿namespace FSharp.Object.Diff.Tests
 
 open System
+open FSharp.Object.Diff
 
 [<CustomEquality; NoComparison>]
 type ObjectWithIdentityAndValue = {
@@ -37,3 +38,27 @@ with
       | _ -> false
   override this.GetHashCode() = if this.Value <> null then hash this.Value else 0
   override this.ToString() = sprintf "ObjectWithString[%s]" this.Value
+
+type ObjectWithCircularReference = {
+  Id: string
+  Reference: ObjectWithCircularReference option
+}
+with
+  override this.ToString() =
+    sprintf "ObjectWithCircularReference{Id='%s'}" this.Id
+
+[<AttributeUsage(AttributeTargets.Property, AllowMultiple = false); AllowNullLiteral>]
+type ObjectDiffTestAttribute() = inherit Attribute()
+
+type ObjectWithHashCodeAndEquals = {
+  Key: string
+  mutable Value: string
+  mutable Item: ObjectWithHashCodeAndEquals option
+}
+with
+  override this.ToString() = this.Key + ":" + this.Value
+
+type ObjectWithAnnotatedProperty = {
+  [<ObjectDiffProperty; ObjectDiffTestAttribute>]
+  mutable Value: string
+}

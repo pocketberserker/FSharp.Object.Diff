@@ -33,7 +33,7 @@ let setup accessor =
 let setupWithDefaultAccessor () =
   Mock<PropertyAwareAccessor>()
     .Setup(fun x -> <@ x.ElementSelector @>).Returns(BeanPropertyElementSelector("foo"))
-    .SetupMethod(fun x -> <@ x.GetCategoriesFromAttribute @>).Returns(Set.empty)
+    .Setup(fun x -> <@ x.CategoriesFromAttribute @>).Returns(Set.empty)
     .Create()
   |> setup
 
@@ -53,7 +53,7 @@ let ``resolveCategories: should return categories configured via node`` = test {
   let target =
     Mock<PropertyAwareAccessor>()
       .Setup(fun x -> <@ x.ElementSelector @>).Returns(BeanPropertyElementSelector("foo"))
-      .SetupMethod(fun x -> <@ x.GetCategoriesFromAttribute @>).Returns(Set.ofList ["Stark"; "Lannister"])
+      .Setup(fun x -> <@ x.CategoriesFromAttribute @>).Returns(Set.ofList ["Stark"; "Lannister"])
       .Create()
     |> setup
   do! assertEquals (Set.ofList ["Stark"; "Lannister"]) (target.CategoryService.ResolveCategories(target.Node))
@@ -63,7 +63,7 @@ let ``resolveCategories: should return combined categories configured via all po
   let target =
     Mock<PropertyAwareAccessor>()
       .Setup(fun x -> <@ x.ElementSelector @>).Returns(BeanPropertyElementSelector("foo"))
-      .SetupMethod(fun x -> <@ x.GetCategoriesFromAttribute @>).Returns(Set.ofList ["C"])
+      .Setup(fun x -> <@ x.CategoriesFromAttribute @>).Returns(Set.ofList ["C"])
       .Create()
     |> setup
   target.CategoryService.OfNode(target.NodePath).ToBe("A") |> ignore
@@ -75,7 +75,7 @@ let ``resolveCategories: should also return categories of parent nodes`` = test 
   let target =
     Mock<PropertyAwareAccessor>()
       .Setup(fun x -> <@ x.ElementSelector @>).Returns(BeanPropertyElementSelector("foo"))
-      .SetupMethod(fun x -> <@ x.GetCategoriesFromAttribute @>).Returns(Set.ofList ["B"])
+      .Setup(fun x -> <@ x.CategoriesFromAttribute @>).Returns(Set.ofList ["B"])
       .Create()
     |> setup
   target.CategoryService.OfNode(NodePath.WithRoot()).ToBe("A") |> ignore

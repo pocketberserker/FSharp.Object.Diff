@@ -48,7 +48,7 @@ type DefaultPropertyAccessExceptionHandler() =
   interface PropertyAccessExceptionHandler with
     member __.OnPropertyReadException(e, _) = raise e
 
-[<AttributeUsage(AttributeTargets.Method ||| AttributeTargets.Property, AllowMultiple = false); AllowNullLiteral>]
+[<AttributeUsage(AttributeTargets.Property, AllowMultiple = false); AllowNullLiteral>]
 type ObjectDiffPropertyAttribute() =
   inherit Attribute()
 
@@ -62,25 +62,19 @@ type ObjectDiffPropertyAttribute() =
   member __.Categories with get () = categories and set(v) = categories <- v
   member __.EqualsOnlyValueProviderMethod with get () = equalsOnlyValueProviderMethod and set(v) = equalsOnlyValueProviderMethod <- v
 
-type PropertyAccessor(propertyName: string, readMethod: MethodInfo, writeMethod: MethodInfo) =
+type PropertyAccessor(property: PropertyInfo) =
 
-  let typ = readMethod.ReturnType
+  let propertyName = property.Name
+  let typ = property.PropertyType
+  let readMethod = property.GetGetMethod()
+  let writeMethod = property.GetSetMethod()
 
-  let rec getFieldAttributes (typ: Type) =
-    try
-      Attribute.GetCustomAttributes(typ.GetField(propertyName))
-      |> Array.toSeq
-      |> Seq.distinct
-    with _ ->
-      if typ.BaseType <> null then getFieldAttributes typ.BaseType
-      else Seq.empty
+  new(propertyName, typ: Type) = PropertyAccessor(typ.GetProperty(propertyName))
 
-  member __.GetReadMethodAttributes() =
-    Attribute.GetCustomAttributes(readMethod)
+  member __.ReadMethodAttributes =
+    Attribute.GetCustomAttributes(property)
     |> Array.toSeq
     |> Seq.distinct
-
-  member __.GetFieldAttributes() = readMethod.DeclaringType |> getFieldAttributes
 
   member __.Set(target: obj, value: obj) =
     if target = null then ()
@@ -94,33 +88,40 @@ type PropertyAccessor(propertyName: string, readMethod: MethodInfo, writeMethod:
       with e ->
         raise <| PropertyWriteException(propertyName, target.GetType(), value, e)
 
+  member __.Get(target: obj) =
+    if target = null then null
+    else
+      try
+        readMethod.Invoke(target, [||])
+      with e ->
+        raise <| PropertyReadException(propertyName, target.GetType(), e)
+
+  member this.Unset(target: obj) = this.Set(target, null)
+
+  member __.Type = typ
+  member __.PropertyName = propertyName
+  member __.ElementSelector = BeanPropertyElementSelector(propertyName) :> ElementSelector
+
+  member this.GetReadMethodAttribute<'T when 'T :> Attribute and 'T : null>() =
+    this.ReadMethodAttributes
+    |> Seq.tryFind (fun a -> typeof<'T>.IsAssignableFrom(a.GetType()))
+    |> function | Some v -> v :?> 'T | None -> null
+
+  member __.CategoriesFromAttribute =
+    let x = Attribute.GetCustomAttribute(property, typeof<ObjectDiffPropertyAttribute>) :?> ObjectDiffPropertyAttribute
+    if x = null then Set.empty
+    else Set.ofArray x.Categories
+
   interface PropertyAwareAccessor with
-    member __.Get(target) =
-      if target = null then null
-      else
-        try
-          readMethod.Invoke(target, [||])
-        with e ->
-          raise <| PropertyReadException(propertyName, target.GetType(), e)
-    member __.GetCategoriesFromAttribute() =
-      let xs = readMethod.GetCustomAttributes(typeof<ObjectDiffPropertyAttribute>, false)
-      if Array.isEmpty xs then Set.empty
-      else (xs.[0] :?> ObjectDiffPropertyAttribute).Categories |> Set.ofArray
+    member this.Get(target) = this.Get(target)
+    member this.CategoriesFromAttribute = this.CategoriesFromAttribute
     member this.Set(target, value) = this.Set(target, value)
-    member __.Type = typ
-    member this.Unset(target) = this.Set(target, null)
-    member __.PropertyName = propertyName
-    member this.GetFieldAttributes() = this.GetFieldAttributes()
-    member this.GetFieldAttribute<'T when 'T :> Attribute and 'T : null>() =
-      this.GetFieldAttributes()
-      |> Seq.tryFind (fun a -> typeof<'T>.IsAssignableFrom(a.GetType()))
-      |> function | Some v -> v :?> 'T | None -> null
-    member this.GetReadMethodAttributes() = this.GetReadMethodAttributes()
-    member this.GetReadMethodAttribute<'T when 'T :> Attribute and 'T : null>() =
-      this.GetReadMethodAttributes()
-      |> Seq.tryFind (fun a -> typeof<'T>.IsAssignableFrom(a.GetType()))
-      |> function | Some v -> v :?> 'T | None -> null
-    member __.ElementSelector = BeanPropertyElementSelector(propertyName) :> ElementSelector
+    member this.Type = this.Type
+    member this.Unset(target) = this.Unset(target)
+    member this.PropertyName = this.PropertyName
+    member this.PropertyAttributes = this.ReadMethodAttributes
+    member this.GetPropertyAttribute<'T when 'T :> Attribute and 'T : null>() = this.GetReadMethodAttribute<'T>()
+    member this.ElementSelector = this.ElementSelector
 
 type StandardIntrospector = StandardIntrospector
 with
@@ -130,7 +131,7 @@ with
       let typeInfo = TypeInfo(typ)
       typ.GetProperties()
       |> Array.iter (fun x ->
-        typeInfo.AddPropertyAccessor(PropertyAccessor(x.Name, x.GetGetMethod(), x.GetSetMethod()))
+        if x.CanRead then typeInfo.AddPropertyAccessor(PropertyAccessor(x))
       )
       typeInfo
 

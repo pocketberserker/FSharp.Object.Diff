@@ -228,7 +228,7 @@ and [<AllowNullLiteral>] DiffNode(parentNode: DiffNode, accessor: Accessor, valu
       else Set.empty
     match accessor with
     | :? CategoryAware as accessor ->
-      accessor.GetCategoriesFromAttribute()
+      accessor.CategoriesFromAttribute
       |> Set.union categories
     | _ -> categories
     |> Set.union additionalCategories
@@ -253,8 +253,13 @@ and [<AllowNullLiteral>] DiffNode(parentNode: DiffNode, accessor: Accessor, valu
 
   member __.GetPropertyAttribute<'T when 'T :> Attribute and 'T : null>() =
     match accessor with
-    | :? PropertyAwareAccessor as accessor -> accessor.GetReadMethodAttribute<'T>()
+    | :? PropertyAwareAccessor as accessor -> accessor.GetPropertyAttribute<'T>()
     | _ -> null
+
+  member __.PropertyAttributes =
+    match accessor with
+    | :? PropertyAwareAccessor as accessor -> accessor.PropertyAttributes
+    | _ -> Seq.empty
 
 type IdentityStrategyResolver =
   abstract member ResolveIdentityStrategy: DiffNode -> IdentityStrategy

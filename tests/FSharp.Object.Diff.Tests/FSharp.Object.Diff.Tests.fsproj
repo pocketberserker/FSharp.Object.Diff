@@ -66,6 +66,9 @@
     <Compile Include="CategoryTest.fs" />
     <Compile Include="CircularReferenceDetectorTest.fs" />
     <Compile Include="EqualsIdentityStrategyTest.fs" />
+    <Compile Include="DiffNodeTest.fs" />
+    <Compile Include="PrintingVisitorTest.fs" />
+    <Compile Include="PropertyAccessorTest.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

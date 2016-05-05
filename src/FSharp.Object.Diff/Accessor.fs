@@ -23,16 +23,14 @@ type TypeAwareAccessor =
   abstract member Type: Type
 
 type CategoryAware =
-  abstract member GetCategoriesFromAttribute: unit -> Set<string>
+  abstract member CategoriesFromAttribute: Set<string>
 
 type PropertyAwareAccessor =
   inherit TypeAwareAccessor
   inherit CategoryAware
   abstract member PropertyName: string
-  abstract member GetFieldAttributes: unit -> Attribute seq
-  abstract member GetFieldAttribute<'T when 'T :> Attribute and 'T : null> : unit -> 'T
-  abstract member GetReadMethodAttributes: unit -> Attribute seq
-  abstract member GetReadMethodAttribute<'T when 'T :> Attribute and 'T : null> : unit -> 'T
+  abstract member PropertyAttributes: Attribute seq
+  abstract member GetPropertyAttribute<'T when 'T :> Attribute and 'T : null> : unit -> 'T
 
 type CollectionItemAccessor(referenceItem: obj, identityStrategy: IdentityStrategy) =
 
