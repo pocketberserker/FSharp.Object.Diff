@@ -119,7 +119,7 @@ type NodePathValueHolder<'T when 'T : equality>() =
     | true, value -> Some value
     | false, _ -> None
 
-  let rec put elementSelectors value =
+  member private __.Put(elementSelectors, value) =
     match elementSelectors with
     | [] -> ()
     | x::xs ->
@@ -132,10 +132,10 @@ type NodePathValueHolder<'T when 'T : equality>() =
         | Some v -> v
       match xs with
       | [] -> nodePathValueHolder.Value <- value
-      | _ -> put xs value
+      | _ -> nodePathValueHolder.Put(xs, value)
 
   member this.Put(nodePath:NodePath, value) =
-    put nodePath.ElementSelectors value
+    this.Put(nodePath.ElementSelectors, value)
     this
 
   member internal __.Value with get() = value and set(v) = value <- v
