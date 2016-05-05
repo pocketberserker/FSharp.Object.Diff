@@ -25,6 +25,7 @@ and internal AppendableBuilderImpl(elementSelectors: ResizeArray<ElementSelector
       elementSelectors.Add(CollectionItemElementSelector(item))
       this :> AppendableBuilder
     member this.MapKey(key) =
+      Assert.notNull "key" key
       elementSelectors.Add(MapKeyElementSelector(key))
       this :> AppendableBuilder
     member this.Build() =
@@ -87,6 +88,7 @@ and [<AllowNullLiteral>] NodePath(elementSelectors: ElementSelector list) =
     builder.ToString()
 
   static member StartBuildingFrom(nodePath: NodePath) =
+    Assert.notNull "propertyPath" nodePath
     AppendableBuilderImpl(ResizeArray(nodePath.ElementSelectors))
     :> AppendableBuilder
 
