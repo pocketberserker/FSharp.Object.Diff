@@ -7,7 +7,7 @@ NUGET
     FAKE (4.21.4)
     FAKE.Lib (4.21.4)
     FAKE.Persimmon (1.0.4)
-      FAKE.Lib (>= 4.1.0)
+      FAKE.Lib (>= 4.1)
       Persimmon.Console (>= 1.0.2)
     Microsoft.Bcl (1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
@@ -15,11 +15,11 @@ NUGET
     Microsoft.Net.Http (2.2.29)
       Microsoft.Bcl (>= 1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
-    NuGet.CommandLine (3.3.0)
-    Octokit (0.18.0)
+    NuGet.CommandLine (3.3)
+    Octokit (0.18)
       Microsoft.Net.Http
     Persimmon.Console (1.0.2)
-    SourceLink.Fake (1.1.0)
+    SourceLink.Fake (1.1)
 GITHUB
   remote: fsharp/FAKE
   specs:
@@ -29,4 +29,5 @@ GROUP Test
 NUGET
   remote: http://api.nuget.org/v3/index.json
   specs:
+    Foq (1.7.1)
     Persimmon (1.0.2)
