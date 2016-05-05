@@ -64,6 +64,7 @@
     <Compile Include="NodePathValueHolderTest.fs" />
     <Compile Include="CategoryTest.fs" />
     <Compile Include="CircularReferenceDetectorTest.fs" />
+    <Compile Include="EqualsIdentityStrategyTest.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
