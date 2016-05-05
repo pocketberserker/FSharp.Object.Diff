@@ -23,11 +23,12 @@ type PrintingVisitor(working: obj, base_: obj) =
     match node.State with
     | Circular -> propertyMessage + " (Circular reference detected: The property has already been processed at another position.)"
     | _ -> propertyMessage
+  abstract member Print: string -> unit
+  default __.Print(text) = printfn "%s" text
   interface NodeVisitor with
-    member __.Node(node, visit) =
+    member this.Node(node, visit) =
       if filter node then
-        differenceToString node base_ working
-        |> printfn "%s"
+        this.Print(differenceToString node base_ working)
 
 type NodeHierarchyVisitor(maxDepth: int) =
   let calculateDepth (node: DiffNode) =
