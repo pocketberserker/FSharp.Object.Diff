@@ -126,6 +126,7 @@ type StandardIntrospector = StandardIntrospector
 with
   interface Introspector with
     member __.Introspect(typ: Type) =
+      Assert.notNull "typ" typ
       let typeInfo = TypeInfo(typ)
       typ.GetProperties()
       |> Array.iter (fun x ->
