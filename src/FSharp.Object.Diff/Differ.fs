@@ -149,19 +149,21 @@ type BeanDiffer(
 
   member __.Accepts(typ: Type) = (not <| typ.IsPrimitive) && (not <| typ.IsArray)
 
+  member __.Compare(parentNode, instances: Instances) =
+    let beanNode = DiffNode(parentNode, instances.SourceAccessor, instances.Type)
+    if instances.AreNull() || instances.AreSame() then
+      beanNode.State <- Untouched
+    elif instances.HasBeenAdded then
+      compareUsingAppropriateMethod beanNode instances
+      beanNode.State <- Added
+    elif instances.HasBeenAdded then
+      compareUsingAppropriateMethod beanNode instances
+      beanNode.State <- Removed
+    else compareUsingAppropriateMethod beanNode instances
+    beanNode
+
   interface Differ with
 
     member this.Accepts(typ: Type) = this.Accepts(typ)
 
-    member this.Compare(parentNode, instances) =
-      let beanNode = DiffNode(parentNode, instances.SourceAccessor, instances.Type)
-      if instances.AreNull() || instances.AreSame() then
-        beanNode.State <- Untouched
-      elif instances.HasBeenAdded then
-        compareUsingAppropriateMethod beanNode instances
-        beanNode.State <- Added
-      elif instances.HasBeenAdded then
-        compareUsingAppropriateMethod beanNode instances
-        beanNode.State <- Removed
-      else compareUsingAppropriateMethod beanNode instances
-      beanNode
+    member this.Compare(parentNode, instances) = this.Compare(parentNode, instances)
