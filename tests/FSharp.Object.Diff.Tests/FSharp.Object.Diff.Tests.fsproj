@@ -70,6 +70,7 @@
     <Compile Include="PrintingVisitorTest.fs" />
     <Compile Include="PropertyAccessorTest.fs" />
     <Compile Include="DifferProviderTest.fs" />
+    <Compile Include="StandardIntrospectorTest.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
