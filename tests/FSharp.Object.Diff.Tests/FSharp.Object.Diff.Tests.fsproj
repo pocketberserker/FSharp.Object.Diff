@@ -63,6 +63,7 @@
     <Compile Include="AccessorTest.fs" />
     <Compile Include="NodePathValueHolderTest.fs" />
     <Compile Include="CategoryTest.fs" />
+    <Compile Include="CircularReferenceDetectorTest.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
