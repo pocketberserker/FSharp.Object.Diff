@@ -169,6 +169,99 @@ type BeanDiffer(
     member this.Compare(parentNode, instances) = this.Compare(parentNode, instances)
 
 [<Sealed>]
+type CollectionDiffer(
+                      differDispatcher: DifferDispatcher,
+                      comparisonStrategyResolver: ComparisonStrategyResolver,
+                      identityStrategyResolver: IdentityStrategyResolver) =
+
+  let compareUsingComparisonStrategy (collectionNode: DiffNode) (collectionInstances: Instances) (comparisonStrategy: ComparisonStrategy) =
+    comparisonStrategy.Compare(
+      collectionNode,
+      collectionInstances.Type,
+      (match collectionInstances.TryGetWorking<System.Collections.IEnumerable>() with | Some v -> v | None -> null),
+      (match collectionInstances.TryGetBase<System.Collections.IEnumerable>() with | Some v -> v | None -> null)
+      )
+
+  let contains (haystack: System.Collections.IEnumerable) needle (identityStrategy: IdentityStrategy) =
+    let rec inner result (e: System.Collections.IEnumerator) =
+      if result then result
+      elif e.MoveNext() then 
+        if identityStrategy.Equals(needle, e.Current) then inner true e
+        else inner result e
+      else false
+    inner false (haystack.GetEnumerator())
+
+  let remove (from: ResizeArray<obj>) these identityStrategy =
+    for item in from do
+      if contains these item identityStrategy then
+        from.Remove(item) |> ignore
+
+  let compareItems (collectionNode: DiffNode) (collectionInstances: Instances) items identityStrategy =
+    for item in items do
+      let itemAccessor = CollectionItemAccessor(item, identityStrategy)
+      differDispatcher.Dispatch(collectionNode, collectionInstances, itemAccessor)
+      |> ignore
+
+  let getOrEmpty (xs: System.Collections.IEnumerable option) =
+    match xs with
+    | Some xs ->
+      let cs = ResizeArray()
+      for x in xs do cs.Add(x)
+      cs :> obj seq
+    | None -> Seq.empty
+
+  let compareInternally (collectionNode: DiffNode) (collectionInstances: Instances) identityStrategy =
+    let working = collectionInstances.TryGetWorking<System.Collections.IEnumerable>() |> getOrEmpty
+    let base_ = collectionInstances.TryGetBase<System.Collections.IEnumerable>() |> getOrEmpty
+
+    let added = ResizeArray(working)
+    let removed = ResizeArray(working)
+    let known = ResizeArray(working)
+
+    remove added base_ identityStrategy
+    remove removed working identityStrategy
+    remove known added identityStrategy
+    remove known removed identityStrategy
+
+    compareItems collectionNode collectionInstances added identityStrategy
+    compareItems collectionNode collectionInstances removed identityStrategy
+    compareItems collectionNode collectionInstances known identityStrategy
+
+  let newNode parentNode (collectionInstances: Instances) =
+    DiffNode(parentNode, collectionInstances.SourceAccessor, collectionInstances.Type)
+
+  member __.Accepts(typ: Type)  =
+    typeof<System.Collections.IEnumerable>.IsAssignableFrom(typ)
+
+  member this.Compare(parentNode, instances) =
+    let collectionNode = newNode parentNode instances
+    let identityStrategy = identityStrategyResolver.ResolveIdentityStrategy(collectionNode)
+    if identityStrategy <> null then
+      collectionNode.ChildIdentityStrategy <- identityStrategy
+    if instances.HasBeenAdded then
+      let addedItems = instances.TryGetWorking<System.Collections.IEnumerable>() |> getOrEmpty
+      compareItems collectionNode instances addedItems identityStrategy
+      collectionNode.State <- Added
+    elif instances.HasBeenRemoved then
+      let removedItems = instances.TryGetBase<System.Collections.IEnumerable>() |> getOrEmpty
+      compareItems collectionNode instances removedItems identityStrategy
+      collectionNode.State <- Removed
+    elif instances.AreSame() then
+      collectionNode.State <- Untouched
+    else
+      let comparisonStrategy = comparisonStrategyResolver.ResolveComparisonStrategy(collectionNode)
+      if comparisonStrategy = null then
+        compareInternally collectionNode instances identityStrategy
+      else compareUsingComparisonStrategy collectionNode instances comparisonStrategy
+    collectionNode
+
+  interface Differ with
+
+    member this.Accepts(typ: Type) = this.Accepts(typ)
+
+    member this.Compare(parentNode, instances) = this.Compare(parentNode, instances)
+
+[<Sealed>]
 type MapDiffer(differDispatcher: DifferDispatcher, comparisonStrategyResolver: ComparisonStrategyResolver) =
 
   let findAddedKeys(instances: Instances) =
