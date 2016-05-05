@@ -30,28 +30,34 @@ and CategoryService(objectDifferBuilder: ObjectDifferBuilder) =
 
   let categoriesFromNode (node: DiffNode) = node.Categories
 
+  member this.OfNode(nodePath) = {
+    new CategoryConfigurerOf with
+      member __.ToBe([<ParamArrayAttribute>] categories) =
+        nodePathCategories.Put(nodePath, Some categories) |> ignore
+        this :> CategoryConfigurer
+  }
+
+  member this.OfType(typ: Type) = {
+    new CategoryConfigurerOf with
+      member __.ToBe([<ParamArrayAttribute>] categories) =
+        typeCategories.Add(typ, categories)
+        this :> CategoryConfigurer
+  }
+
+  member __.ResolveCategories(node) =
+    Set.unionMany (seq {
+      yield categoriesFromNodePathConfiguration node
+      yield categoriesFromTypeConfiguration node
+      yield categoriesFromNode node
+    })
+
   interface CategoryConfigurer with
     member __.And() = objectDifferBuilder
-    member this.OfNode(nodePath) =
-      { new CategoryConfigurerOf with
-        member __.ToBe([<ParamArrayAttribute>] categories) =
-          nodePathCategories.Put(nodePath, Some categories) |> ignore
-          this :> CategoryConfigurer
-      }
-    member this.OfType(typ: Type) =
-      { new CategoryConfigurerOf with
-        member __.ToBe([<ParamArrayAttribute>] categories) =
-          typeCategories.Add(typ, categories)
-          this :> CategoryConfigurer
-      }
+    member this.OfNode(nodePath) = this.OfNode(nodePath)
+    member this.OfType(typ) = this.OfType(typ)
   
   interface CategoryResolver with
-    member __.ResolveCategories(node) =
-      Set.unionMany (seq {
-        yield categoriesFromNodePathConfiguration node
-        yield categoriesFromTypeConfiguration node
-        yield categoriesFromNode node
-      })
+    member this.ResolveCategories(node) = this.ResolveCategories(node)
 
 and IntrospectionConfigurerOf =
   abstract member ToUse: Introspector -> IntrospectionConfigurer
