@@ -62,7 +62,7 @@ and [<AllowNullLiteral>] NodePath(elementSelectors: ElementSelector list) =
     match other with
     | null -> false
     | :? NodePath as other ->
-      if this = other then true
+      if Object.ReferenceEquals(this, other) then true
       else elementSelectors = other.ElementSelectors
     | _ -> false
 
