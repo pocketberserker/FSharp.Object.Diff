@@ -69,6 +69,7 @@
     <Compile Include="DiffNodeTest.fs" />
     <Compile Include="PrintingVisitorTest.fs" />
     <Compile Include="PropertyAccessorTest.fs" />
+    <Compile Include="DifferProviderTest.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
