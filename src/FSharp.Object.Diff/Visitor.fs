@@ -1,6 +1,7 @@
 ﻿namespace FSharp.Object.Diff
 
 type PrintingVisitor(working: obj, base_: obj) =
+
   let filter (node: DiffNode) =
     (node.IsRootNode && not node.HasChanges) || (node.HasChanges && not node.HasChildren)
   let translateState base_ modified = function
@@ -16,6 +17,7 @@ type PrintingVisitor(working: obj, base_: obj) =
   | Untouched -> "has not changed"
   | Circular -> "has already been processed at another position. (Circular reference!)"
   | state -> sprintf "(%A)" state
+
   let differenceToString (node: DiffNode) (base_: obj) (modified: obj) =
     let nodePath = node.Path
     let stateMessage = translateState (node.CanonicalGet(base_)) (node.CanonicalGet(modified)) node.State
@@ -23,8 +25,13 @@ type PrintingVisitor(working: obj, base_: obj) =
     match node.State with
     | Circular -> propertyMessage + " (Circular reference detected: The property has already been processed at another position.)"
     | _ -> propertyMessage
+
   abstract member Print: string -> unit
   default __.Print(text) = printfn "%s" text
+
+  abstract member Filter: DiffNode -> bool
+  default __.Filter(node) = filter node
+
   interface NodeVisitor with
     member this.Node(node, visit) =
       if filter node then

@@ -19,4 +19,6 @@ let run () =
   let batman = { FirstName = "Batman"; LastName = null }
   let rootNode = ObjectDifferBuilder.BuildDefault().Compare(batman, bruceWayne)
   rootNode.Visit(NodeHierarchyVisitor(10))
-  rootNode.Visit(PrintingVisitor(batman, bruceWayne))
+  rootNode.Visit({ new PrintingVisitor(batman, bruceWayne) with
+    override __.Filter(_) = true
+  })
