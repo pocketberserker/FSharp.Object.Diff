@@ -7,12 +7,8 @@ open Foq
 open FSharp.Object.Diff
 
 type MockTarget = {
-  Factory: Mock<CircularReferenceDetectorFactory>
-  Handler: Mock<CircularReferenceExceptionHandler>
-  IgnoredResolver: Mock<IsIgnoredResolver>
-  CategoryResolver: Mock<CategoryResolver>
-  ReturnableResolver: Mock<IsReturnableResolver>
   HandlerResolver: Mock<PropertyAccessExceptionHandlerResolver>
+  Handler: Mock<CircularReferenceExceptionHandler>
 }
 
 type Target = {
@@ -24,21 +20,21 @@ type Target = {
 let setup provider (detector: CircularReferenceDetector) (f: MockTarget -> MockTarget) =
   let target =
     {
-      Factory = Mock<CircularReferenceDetectorFactory>()
-        .SetupMethod(fun x -> <@ x.CreateCircularReferenceDetector @>).Returns(detector)
-      Handler = Mock<CircularReferenceExceptionHandler>()
-      IgnoredResolver = Mock<IsIgnoredResolver>()
-      CategoryResolver = Mock<CategoryResolver>()
-        .SetupMethod(fun x -> <@ x.ResolveCategories @>).Returns(Set.empty)
-      ReturnableResolver = Mock<IsReturnableResolver>()
+      MockTarget.Handler = Mock<CircularReferenceExceptionHandler>()
       HandlerResolver = Mock<PropertyAccessExceptionHandlerResolver>()
     }
     |> f
-  let factory = target.Factory.Create()
+  let factory =
+    Mock<CircularReferenceDetectorFactory>()
+      .SetupMethod(fun x -> <@ x.CreateCircularReferenceDetector @>).Returns(detector)
+      .Create()
   let handler = target.Handler.Create()
-  let ignoredResolver = target.IgnoredResolver.Create()
-  let categoryResolver = target.CategoryResolver.Create()
-  let returnableResolver = target.ReturnableResolver.Create()
+  let ignoredResolver = Mock<IsIgnoredResolver>().Create()
+  let categoryResolver =
+    Mock<CategoryResolver>()
+      .SetupMethod(fun x -> <@ x.ResolveCategories @>).Returns(Set.empty)
+      .Create()
+  let returnableResolver = Mock<IsReturnableResolver>().Create()
   let handlerResolver = target.HandlerResolver.Create()
   {
     Handler = handler
