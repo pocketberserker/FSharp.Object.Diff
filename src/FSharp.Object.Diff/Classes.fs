@@ -11,8 +11,9 @@ type Type with
 
   static member TypesOf([<ParamArray>] values: obj[]) =
     values
-    |> Array.filter ((<>) null)
-    |> Array.map (fun o -> o.GetType())
+    |> Array.choose (fun o ->
+      if o <> null then Some (o.GetType())
+      else None)
     |> Array.toSeq
     |> Seq.distinct
 
