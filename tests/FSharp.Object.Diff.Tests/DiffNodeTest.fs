@@ -8,8 +8,8 @@ open Foq
 
 let ``getChild: always starts at root node when called with NodePath`` = test {
   let rootNode = DiffNode.NewRootNode()
-  let childNodeA = DiffNode(null, new CollectionItemAccessor("A"), null)
-  let childNodeB = DiffNode(null, new CollectionItemAccessor("B"), null)
+  let childNodeA = DiffNode(null, CollectionItemAccessor("A"), null)
+  let childNodeB = DiffNode(null, CollectionItemAccessor("B"), null)
   rootNode.AddChild(childNodeA)
   childNodeA.AddChild(childNodeB)
   do! childNodeA.Child(NodePath.StartBuilding().CollectionItem("A").CollectionItem("B").Build())
@@ -44,7 +44,7 @@ let ``addChild: fails with exception when attempting to add root node`` = test {
 }
 
 let ``addChild: fails with exception when attempting to add node that is already child of another node`` = test {
-  let childNode = new DiffNode(DiffNode.NewRootNode(), Mock<Accessor>().Create(), typeof<obj>)
+  let childNode = DiffNode(DiffNode.NewRootNode(), Mock<Accessor>().Create(), typeof<obj>)
   let! ex = trap { it (DiffNode.NewRootNode().AddChild(childNode)) }
   do! assertEquals typeof<ArgumentException> (ex.GetType())
 }
