@@ -174,6 +174,7 @@ and [<AllowNullLiteral>] DiffNode(parentNode: DiffNode, accessor: Accessor, valu
       raise <| ArgumentException("Detected attempt to add child node that is already the child of another node. Adding nodes multiple times is not allowed, since it could cause infinite loops.")
     if node.ParentNode = null then
       node.ParentNode <- this
+    if children.ContainsKey(node.ElementSelector) then children.Remove(node.ElementSelector) |> ignore
     children.Add(node.ElementSelector, node)
     if this.State = Untouched && node.HasChanges then
       this.State <- Changed
