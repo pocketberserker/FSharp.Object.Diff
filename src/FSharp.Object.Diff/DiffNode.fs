@@ -261,5 +261,16 @@ and [<AllowNullLiteral>] DiffNode(parentNode: DiffNode, accessor: Accessor, valu
     | :? PropertyAwareAccessor as accessor -> accessor.PropertyAttributes
     | _ -> Seq.empty
 
+  member private __.Accessor = accessor
+
+  override this.Equals(other) =
+    match other with
+    | null -> false
+    | _ when Object.ReferenceEquals(this, other) -> true
+    | :? DiffNode as other -> accessor = other.Accessor
+    | _ -> false
+
+  override __.GetHashCode() = hash accessor
+
 type IdentityStrategyResolver =
   abstract member ResolveIdentityStrategy: DiffNode -> IdentityStrategy
