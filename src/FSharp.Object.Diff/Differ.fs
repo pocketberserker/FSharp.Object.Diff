@@ -93,27 +93,31 @@ type DifferDispatcher(
 
   let compareWithAccessor parentNode (parentInstances: Instances) (accessor: Accessor) =
     let node = new DiffNode(parentNode, accessor, null)
-    let result, accessedInstances =
-      match accessor with
-      | :? PropertyAwareAccessor as accessor ->
-        try
-          (None, parentInstances.Access(accessor))
-        with
-          :? PropertyReadException as e ->
-            node.State <- Inaccessible
-            let parentType = parentInstances.Type
-            let propertyName = accessor.PropertyName
-            let exceptionHandler = propertyAccessExceptionHandlerResolver.ResolvePropertyAccessExceptionHandler(parentType, propertyName)
-            if exceptionHandler <> null then
-              exceptionHandler.OnPropertyReadException(e, node)
-            (Some node, parentInstances)
-      | _ -> (None, parentInstances.Access(accessor))
-    match result with
-    | Some node -> node
-    | None when accessedInstances.AreNull() ->
-      DiffNode(parentNode, accessedInstances.SourceAccessor, accessedInstances.Type)
-    | None ->
-      compareWithCircularReferenceTracking parentNode accessedInstances
+    if isIgnoredResolver.IsIgnored(node) then
+      node.State <- Ignored
+      node
+    else
+      let result, accessedInstances =
+        match accessor with
+        | :? PropertyAwareAccessor as accessor ->
+          try
+            (None, parentInstances.Access(accessor))
+          with
+            :? PropertyReadException as e ->
+              node.State <- Inaccessible
+              let parentType = parentInstances.Type
+              let propertyName = accessor.PropertyName
+              let exceptionHandler = propertyAccessExceptionHandlerResolver.ResolvePropertyAccessExceptionHandler(parentType, propertyName)
+              if exceptionHandler <> null then
+                exceptionHandler.OnPropertyReadException(e, node)
+              (Some node, parentInstances)
+        | _ -> (None, parentInstances.Access(accessor))
+      match result with
+      | Some node -> node
+      | None when accessedInstances.AreNull() ->
+        DiffNode(parentNode, accessedInstances.SourceAccessor, accessedInstances.Type)
+      | None ->
+        compareWithCircularReferenceTracking parentNode accessedInstances
 
   member __.Dispatch(parentNode, parentInstances, accessor) =
     let node = compareWithAccessor parentNode parentInstances accessor
