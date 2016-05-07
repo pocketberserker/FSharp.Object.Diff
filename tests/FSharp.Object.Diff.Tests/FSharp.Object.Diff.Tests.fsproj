@@ -71,6 +71,7 @@
     <Compile Include="PropertyAccessorTest.fs" />
     <Compile Include="DifferProviderTest.fs" />
     <Compile Include="StandardIntrospectorTest.fs" />
+    <Compile Include="InstancesTest.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
