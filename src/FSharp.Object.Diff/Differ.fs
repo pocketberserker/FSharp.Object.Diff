@@ -154,7 +154,7 @@ type DifferDispatcher(
       | None ->
         compareWithCircularReferenceTracking parentNode accessedInstances
 
-  member __.Dispatch(parentNode, parentInstances, accessor) =
+  member __.Dispatch(parentNode: DiffNode, parentInstances, accessor) =
     let node = compareWithAccessor parentNode parentInstances accessor
     if parentNode <> null && isReturnableResolver.IsReturnable(node) then
       parentNode.AddChild(node)
