@@ -194,8 +194,10 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
       elif typeof<System.Collections.IEnumerable>.AllAssignableFrom(types) then
         typeof<System.Collections.IEnumerable>
       else
-        // TODO: implement
-        raise ()
+        match Type.mostSpecificSharedType types with
+        | Some sharedType -> sharedType
+        | None when sourceAccessorType <> null -> sourceAccessorType
+        | None -> raise ()
     else raise ()
 
   member this.IsPrimitiveType = this.Type <> null && this.Type.IsPrimitive

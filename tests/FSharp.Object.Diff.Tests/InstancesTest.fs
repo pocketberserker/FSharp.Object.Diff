@@ -12,7 +12,6 @@ let ``Type: throws IllegalArgumentException if base and working have incompatibl
   source [
     (box <| StringBuilder(), box "")
     (box "foo", box 42)
-    (box true, box <| DateTime())
   ]
   run (fun (base_, working) -> test {
     let instances = Instances(RootAccessor, working, base_, null)

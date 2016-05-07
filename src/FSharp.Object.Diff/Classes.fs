@@ -56,3 +56,35 @@ module Type =
     else simpleTypes |> List.exists ((=) typ)
 
   let isComparable typ = typeof<IComparable>.IsAssignableFrom(typ)
+
+  let private superclassesOf (types: Type seq) =
+    let rec inner acc s = function
+    | [] -> Seq.ofList acc
+    | (x: Type)::xs ->
+      let s = match s with | None -> x.BaseType | Some s -> s
+      if s <> null && s <> typeof<obj> then
+        inner (s::acc) (Some s.BaseType) (x::xs)
+      else inner acc None xs
+    types
+    |> Seq.toList
+    |> inner [] None
+    |> Seq.distinct
+
+  let  mostSpecificSharedType (types: Type seq) =
+    let sharedTypes =
+      seq { yield! superclassesOf(types); yield! types }
+      |> Seq.distinct
+      |> Seq.fold (fun acc potentiallySharedType ->
+        if types |> Seq.filter (fun t -> potentiallySharedType.IsAssignableFrom(t)) |> Seq.length = Seq.length types then
+          potentiallySharedType :: acc
+        else acc
+      ) []
+      |> Seq.distinct
+      |> Seq.toList
+      |> List.sortWith (fun o1 o2 ->
+        if o1.IsAssignableFrom(o2) then 1
+        elif o2.IsAssignableFrom(o1) then -1
+        else 0
+      )
+    if Seq.isEmpty sharedTypes then None
+    else sharedTypes |> Seq.head |> Some
