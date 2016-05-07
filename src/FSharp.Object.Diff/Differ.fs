@@ -160,7 +160,7 @@ type BeanDiffer(
     elif instances.HasBeenAdded then
       compareUsingAppropriateMethod beanNode instances
       beanNode.State <- Added
-    elif instances.HasBeenAdded then
+    elif instances.HasBeenRemoved then
       compareUsingAppropriateMethod beanNode instances
       beanNode.State <- Removed
     else compareUsingAppropriateMethod beanNode instances
