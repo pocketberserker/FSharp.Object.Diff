@@ -172,9 +172,9 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
     | :? TypeAwareAccessor as accessor -> accessor.Type
     | _ -> null
 
-  member __.AreEqual() = obj.IsEqual(base_, working)
-  member __.AreSame() = Object.ReferenceEquals(working, base_)
-  member __.AreNull() = working = null && base_ = null
+  member __.AreEqual = obj.IsEqual(base_, working)
+  member __.AreSame = Object.ReferenceEquals(working, base_)
+  member __.AreNull = working = null && base_ = null
 
   member this.Type =
     let types = Type.TypesOf(working, base_, fresh)

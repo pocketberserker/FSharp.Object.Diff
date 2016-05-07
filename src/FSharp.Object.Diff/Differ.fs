@@ -23,7 +23,7 @@ type PrimitiveDiffer(primitiveDefaultValueModeResolver: PrimitiveDefaultValueMod
         node.State <- Added
       elif shouldTreatPrimitiveDefaultsAsUnassigned node && instances.HasBeenAdded then
         node.State <- Removed
-      elif not <| instances.AreEqual() then
+      elif not <| instances.AreEqual then
         node.State <- Changed
       node
 
@@ -114,7 +114,7 @@ type DifferDispatcher(
         | _ -> (None, parentInstances.Access(accessor))
       match result with
       | Some node -> node
-      | None when accessedInstances.AreNull() ->
+      | None when accessedInstances.AreNull ->
         DiffNode(parentNode, accessedInstances.SourceAccessor, accessedInstances.Type)
       | None ->
         compareWithCircularReferenceTracking parentNode accessedInstances
@@ -155,7 +155,7 @@ type BeanDiffer(
 
   member __.Compare(parentNode, instances: Instances) =
     let beanNode = DiffNode(parentNode, instances.SourceAccessor, instances.Type)
-    if instances.AreNull() || instances.AreSame() then
+    if instances.AreNull || instances.AreSame then
       beanNode.State <- Untouched
     elif instances.HasBeenAdded then
       compareUsingAppropriateMethod beanNode instances
@@ -250,7 +250,7 @@ type CollectionDiffer(
       let removedItems = instances.TryGetBase<System.Collections.IEnumerable>() |> getOrEmpty
       compareItems collectionNode instances removedItems identityStrategy
       collectionNode.State <- Removed
-    elif instances.AreSame() then
+    elif instances.AreSame then
       collectionNode.State <- Untouched
     else
       let comparisonStrategy = comparisonStrategyResolver.ResolveComparisonStrategy(collectionNode)
@@ -318,7 +318,7 @@ type MapDiffer(differDispatcher: DifferDispatcher, comparisonStrategyResolver: C
       | None -> Seq.empty
       |> compareEntries mapNode instances
       mapNode.State <- Removed
-    elif instances.AreSame() then
+    elif instances.AreSame then
       mapNode.State <- Untouched
     elif comparisonStrategyResolver.ResolveComparisonStrategy(mapNode) <> null then
       comparisonStrategyResolver.ResolveComparisonStrategy(mapNode)
