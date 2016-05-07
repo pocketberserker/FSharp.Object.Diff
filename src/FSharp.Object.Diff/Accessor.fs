@@ -149,7 +149,8 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
 
   member __.SourceAccessor = sourceAccessor
 
-  member __.Access(accessor: Accessor) =
+  abstract member Access: Accessor -> Instances
+  override __.Access(accessor) =
     Instances(accessor, accessor.Get(working), accessor.Get(base_), accessor.Get(fresh))
 
   member __.Working = working
@@ -176,7 +177,8 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
   member __.AreSame = Object.ReferenceEquals(working, base_)
   member __.AreNull = working = null && base_ = null
 
-  member this.Type =
+  abstract member Type: Type
+  default this.Type =
     let types = Type.TypesOf(working, base_, fresh)
     let raise () =
       types

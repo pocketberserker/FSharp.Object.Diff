@@ -68,6 +68,7 @@
     <Compile Include="CircularReferenceDetectorTest.fs" />
     <Compile Include="EqualsIdentityStrategyTest.fs" />
     <Compile Include="DiffNodeTest.fs" />
+    <Compile Include="DifferDispatcherTest.fs" />
     <Compile Include="PrintingVisitorTest.fs" />
     <Compile Include="PropertyAccessorTest.fs" />
     <Compile Include="DifferProviderTest.fs" />

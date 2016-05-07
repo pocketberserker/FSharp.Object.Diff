@@ -29,10 +29,14 @@ type PrimitiveDiffer(primitiveDefaultValueModeResolver: PrimitiveDefaultValueMod
       node
 
 type DifferProvider() =
+
   let differs = new ResizeArray<Differ>()
+
   member __.Push(differ) = differs.Add(differ)
   member __.PushAll(ds) = differs.AddRange(ds)
-  member __.RetrieveDifferForType(typ: Type) =
+
+  abstract member RetrieveDifferForType: Type -> Differ
+  default __.RetrieveDifferForType(typ) =
     if typ = null then raise <| ArgumentException("Missing 'type'")
     match differs |> Seq.tryFind (fun d -> d.Accepts(typ)) with
     | Some differ -> differ

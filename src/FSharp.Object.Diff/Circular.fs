@@ -46,7 +46,8 @@ type CircularReferenceDetector(referenceMatchingMode: DetectorReferenceMatchingM
       else isMatch needle instance
     ) false
 
-  member this.Push(instance: obj, nodePath: NodePath) =
+  abstract member Push: obj * NodePath -> unit
+  default this.Push(instance, nodePath) =
     if instance = null then ()
     else
       if this.Knows(instance) then
