@@ -2,6 +2,7 @@
 
 open System
 open System.Collections.Generic
+open System.Threading
 
 [<AllowNullLiteral>]
 type Differ =
@@ -47,9 +48,21 @@ type DifferDispatcher(
                       categoryResolver: CategoryResolver
   ) =
 
-  // TODO: implement
-  // workingThreadLocal
-  // baseThreadLocal
+  [<ThreadStatic; DefaultValue>]
+  static val mutable private workingThreadLocal : CircularReferenceDetector
+  [<ThreadStatic; DefaultValue>]
+  static val mutable private baseThreadLocal : CircularReferenceDetector
+
+  let resetInstanceMemory () =
+    DifferDispatcher.workingThreadLocal <- circularReferenceDetectorFactory.CreateCircularReferenceDetector()
+    DifferDispatcher.baseThreadLocal <- circularReferenceDetectorFactory.CreateCircularReferenceDetector()
+
+  let clearInstanceMemory () =
+    DifferDispatcher.workingThreadLocal <- null
+    DifferDispatcher.baseThreadLocal <- null
+
+  do
+    resetInstanceMemory ()
 
   let compare parentNode (instances: Instances) =
     let differ = differProvider.RetrieveDifferForType(instances.Type)
@@ -72,23 +85,45 @@ type DifferDispatcher(
     node.CircleStartNode <- findNodeMatchingPropertyPath parentNode circleStartPath
     node
 
+  let getNodePath (parentNode: DiffNode) (instances: Instances) =
+    if parentNode = null then NodePath.WithRoot()
+    else
+      NodePath.StartBuildingFrom(parentNode.Path).Element(instances.SourceAccessor.ElementSelector).Build()
+
+  let transactionalPushToCircularReferenceDetectors nodePath (instances: Instances) =
+    DifferDispatcher.workingThreadLocal.Push(instances.Working, nodePath)
+    try
+      DifferDispatcher.baseThreadLocal.Push(instances.Base, nodePath)
+    with
+     :? CircularReferenceException ->
+       DifferDispatcher.workingThreadLocal.Remove(instances.Working)
+       reraise ()
+
+  let rememberInstances parentNode instances =
+    let nodePath = getNodePath parentNode instances
+    transactionalPushToCircularReferenceDetectors nodePath instances
+
+  let forgetInstances parentNode (instances: Instances) =
+    let nodePath = getNodePath parentNode instances
+    DifferDispatcher.workingThreadLocal.Remove(instances.Working)
+    DifferDispatcher.baseThreadLocal.Remove(instances.Base)
+
   let compareWithCircularReferenceTracking parentNode instances =
     let node =
       try
-        //rememberInstances parentNode instances
+        rememberInstances parentNode instances
         let node: ref<DiffNode> = ref null
         try
           node := compare parentNode instances
         finally
-          //if !node <> null then forgetInstances parentNode instances
-          ()
+          if !node <> null then forgetInstances parentNode instances
         !node
       with
         CircularReferenceException(nodePath) ->
           let node = newCircularNode parentNode instances nodePath
           circularReferenceExceptionHandler.OnCircularReferenceException(node)
           node
-    //if parentNode <> null then resetInstanceMemory ()
+    if parentNode <> null then resetInstanceMemory ()
     node 
 
   let compareWithAccessor parentNode (parentInstances: Instances) (accessor: Accessor) =
@@ -126,6 +161,9 @@ type DifferDispatcher(
     if node <> null then
       node.AddCategories(categoryResolver.ResolveCategories(node) |> Set.toList)
     node
+
+  member __.ResetInstanceMemory() = resetInstanceMemory ()
+  member __.ClearInstanceMemory() = clearInstanceMemory ()
 
 [<Sealed>]
 type BeanDiffer(

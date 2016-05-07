@@ -19,6 +19,7 @@ with
     | Entry(nodePath, instance) ->
       sprintf "%O{%A}" nodePath instance
 
+[<AllowNullLiteral>]
 type CircularReferenceDetector(referenceMatchingMode: DetectorReferenceMatchingMode) =
 
   let stack = ResizeArray<CircularReferenceDetectorEntry>()
