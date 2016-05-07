@@ -137,7 +137,7 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
     Instances(sourceAccessor, working, base_, fresh)
 
   static member Of(sourceAccessor: Accessor, working: 'T, base_: 'T) =
-    let fresh = if working <> null then Type.FreshInstanceOf<'T>() else null
+    let fresh = if box working <> null then Type.FreshInstanceOf<'T>() else null
     Instances(sourceAccessor, working, base_, fresh)
 
   static member Of(working: 'T, base_: 'T) =
