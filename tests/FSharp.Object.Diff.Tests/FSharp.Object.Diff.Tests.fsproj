@@ -72,6 +72,7 @@
     <Compile Include="PrintingVisitorTest.fs" />
     <Compile Include="PropertyAccessorTest.fs" />
     <Compile Include="DifferProviderTest.fs" />
+    <Compile Include="BeanDifferTest.fs" />
     <Compile Include="StandardIntrospectorTest.fs" />
     <Compile Include="InstancesTest.fs" />
   </ItemGroup>
