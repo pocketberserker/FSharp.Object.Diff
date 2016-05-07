@@ -25,6 +25,9 @@ type Type with
     if ctor <> null then ctor.Invoke([||])
     else null
 
+  member this.AllAssignableFrom(types: Type seq) =
+    types |> Seq.forall (fun t -> this.IsAssignableFrom(t))
+
 module Type =
 
   let isPrimitive (typ: Type) = typ <> null && typ.IsPrimitive

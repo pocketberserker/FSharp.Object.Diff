@@ -189,9 +189,14 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
     elif Seq.length types = 1 then
       types |> Seq.head
     elif Seq.length types > 1 then
-      // TODO: implement
-      raise ()
-    else raise()
+      if typeof<System.Collections.IDictionary>.AllAssignableFrom(types) then
+        typeof<System.Collections.IDictionary>
+      elif typeof<System.Collections.IEnumerable>.AllAssignableFrom(types) then
+        typeof<System.Collections.IEnumerable>
+      else
+        // TODO: implement
+        raise ()
+    else raise ()
 
   member this.IsPrimitiveType = this.Type <> null && this.Type.IsPrimitive
 
