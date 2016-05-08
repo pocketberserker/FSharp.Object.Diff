@@ -556,7 +556,7 @@ and CircularReferenceService(objectDifferBuilder: ObjectDifferBuilder) =
   interface CircularReferenceDetectorFactory with
     member __.CreateCircularReferenceDetector() =
       match circularReferenceMatchingMode with
-      | CircularReferenceMatchingMode.EqualMethod -> CircularReferenceDetector(EqualMethod)
+      | CircularReferenceMatchingMode.ReferenceEqualMethod -> CircularReferenceDetector(ReferenceEqualMethod)
       | CircularReferenceMatchingMode.EqualityOperator -> CircularReferenceDetector(EqualityOperator)
 
   interface CircularReferenceExceptionHandler with

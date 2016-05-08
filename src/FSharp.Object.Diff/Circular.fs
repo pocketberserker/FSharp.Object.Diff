@@ -4,11 +4,11 @@ open System
 
 type CircularReferenceMatchingMode =
   | EqualityOperator
-  | EqualMethod
+  | ReferenceEqualMethod
 
 type DetectorReferenceMatchingMode =
   | EqualityOperator
-  | EqualMethod
+  | ReferenceEqualMethod
 
 exception CircularReferenceException of NodePath
 
@@ -27,7 +27,7 @@ type CircularReferenceDetector(referenceMatchingMode: DetectorReferenceMatchingM
   let isMatch anObject anotherObject =
     match referenceMatchingMode with
     | EqualityOperator -> anotherObject = anObject
-    | EqualMethod -> (anotherObject = anObject) || anObject.Equals(anotherObject)
+    | ReferenceEqualMethod -> Object.ReferenceEquals(anotherObject, anObject)
 
   let entryForInstance instance =
     stack

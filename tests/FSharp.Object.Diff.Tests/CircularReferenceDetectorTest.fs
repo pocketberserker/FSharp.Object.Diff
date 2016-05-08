@@ -73,8 +73,8 @@ let ``knows: returns false when instance is unknown`` = test {
 
 let matchingMode = parameterize {
   source [
-    (DetectorReferenceMatchingMode.EqualMethod, box { Value = "foo" }, box { Value = "foo" }, false)
-    (DetectorReferenceMatchingMode.EqualityOperator, box "foo", box "foo", true)
+    (DetectorReferenceMatchingMode.EqualityOperator, box { Value = "foo" }, box { Value = "foo" }, false)
+    (DetectorReferenceMatchingMode.ReferenceEqualMethod, box "foo", box "foo", true)
   ]
   run (fun (matchingMode, internalInstance, externalInstance, equalByOperator) -> test {
     let detector = CircularReferenceDetector(matchingMode)
