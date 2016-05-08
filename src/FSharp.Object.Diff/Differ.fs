@@ -238,9 +238,8 @@ type CollectionDiffer(
     inner false (haystack.GetEnumerator())
 
   let remove (from: ResizeArray<obj>) these identityStrategy =
-    for item in from do
-      if contains these item identityStrategy then
-        from.Remove(item) |> ignore
+    from.RemoveAll(fun item -> contains these item identityStrategy)
+    |> ignore
 
   let compareItems (collectionNode: DiffNode) (collectionInstances: Instances) items identityStrategy =
     for item in items do
