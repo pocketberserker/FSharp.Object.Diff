@@ -52,10 +52,11 @@ type CircularReferenceDetector(referenceMatchingMode: DetectorReferenceMatchingM
   member __.Remove(instance: obj) =
     if instance = null then ()
     else
-      if isMatch instance (match Seq.last stack with | Entry(_, instance) -> instance) then
-        stack.RemoveAt(stack.Count - 1)
-      else
-        raise <| ArgumentException("Detected inconsistency in enter/leave sequence. Must always be LIFO.")
+      if not <| Seq.isEmpty stack then
+        if isMatch instance (match Seq.last stack with | Entry(_, instance) -> instance) then
+          stack.RemoveAt(stack.Count - 1)
+        else
+          raise <| ArgumentException("Detected inconsistency in enter/leave sequence. Must always be LIFO.")
 
   member __.Size = stack.Count
 
