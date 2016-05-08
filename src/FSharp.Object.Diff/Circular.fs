@@ -31,20 +31,11 @@ type CircularReferenceDetector(referenceMatchingMode: DetectorReferenceMatchingM
 
   let entryForInstance instance =
     stack
-    |> Seq.fold (fun result (Entry(_, i) as entry) ->
-      match result with
-      | Some _ -> result
-      | None ->
-        if isMatch instance i then Some entry
-        else None
-    ) None
+    |> Seq.tryFind (fun (Entry(_, i)) -> isMatch instance i)
 
   member __.Knows(needle: obj) =
     stack
-    |> Seq.fold (fun result (Entry(_, instance)) ->
-      if result then result
-      else isMatch needle instance
-    ) false
+    |> Seq.exists (fun (Entry(_, instance)) -> isMatch needle instance)
 
   abstract member Push: obj * NodePath -> unit
   default this.Push(instance, nodePath) =
