@@ -98,35 +98,64 @@ and IntrospectionService(objectDifferBuilder: ObjectDifferBuilder) =
           defaultIntrospector <- StandardIntrospector
         defaultIntrospector
 
+  member this.SetDefaultIntrospector(introspector) =
+    Assert.notNull "The default introspector must not be null" introspector
+    defaultIntrospector <- introspector
+    this :> IntrospectionConfigurer
+
+  member __.IsIntrospectable(node: DiffNode) =
+    match node.Type with
+    | null -> false
+    | typ ->
+      if isPrimitiveTypeEnumOrArray typ then false
+      elif nodePathIntrospectionModeHolder.ValueForNodePath(node.Path) = Some Disabled then false
+      else
+        match typeIntrospectionModeMap.TryGetValue(typ) with
+        | true, Disabled -> false
+        | _ -> true
+
+  member this.OfNode(path) = { new IntrospectionConfigurerOf with
+    member __.ToBeDisabled() =
+      nodePathIntrospectionModeHolder.Put(path, Some Disabled) |> ignore
+      this :> IntrospectionConfigurer
+    member __.ToBeEnabled() =
+      nodePathIntrospectionModeHolder.Put(path, Some Enabled) |> ignore
+      this :> IntrospectionConfigurer
+    member __.ToUse(introspector) =
+      nodePathIntrospectorHolder.Put(path, Some introspector) |> ignore
+      this :> IntrospectionConfigurer
+  }
+
+  member this.OfType(typ) = { new IntrospectionConfigurerOf with
+    member __.ToBeDisabled() =
+      if typ <> null then
+        if typeIntrospectionModeMap.ContainsKey(typ) then typeIntrospectionModeMap.Remove(typ) |> ignore
+        typeIntrospectionModeMap.Add(typ, Disabled)
+      this :> IntrospectionConfigurer
+    member __.ToBeEnabled() =
+      if typ <> null then
+        if typeIntrospectionModeMap.ContainsKey(typ) then typeIntrospectionModeMap.Remove(typ) |> ignore
+        typeIntrospectionModeMap.Add(typ, Enabled)
+      this :> IntrospectionConfigurer
+    member __.ToUse(introspector) =
+      if typ <> null then
+        if typeIntrospectorMap.ContainsKey(typ) then typeIntrospectorMap.Remove(typ) |> ignore
+        typeIntrospectorMap.Add(typ, introspector)
+      this :> IntrospectionConfigurer
+  }
+
+  member this.TypeInfoForNode(node: DiffNode) =
+    let beanType = node.Type
+    let introspector = this.IntrospectorForNode(node)
+    let typeInfo = introspector.Introspect(beanType)
+    typeInfo.InstanceFactory <- instanceFactory
+    typeInfo
+
   interface IntrospectionConfigurer with
     member __.And() = objectDifferBuilder
-    member this.OfNode(path) =
-      { new IntrospectionConfigurerOf with
-        member __.ToBeDisabled() =
-          nodePathIntrospectionModeHolder.Put(path, Some Disabled) |> ignore
-          this :> IntrospectionConfigurer
-        member __.ToBeEnabled() =
-          nodePathIntrospectionModeHolder.Put(path, Some Enabled) |> ignore
-          this :> IntrospectionConfigurer
-        member __.ToUse(introspector) =
-          nodePathIntrospectorHolder.Put(path, Some introspector) |> ignore
-          this :> IntrospectionConfigurer
-      }
-    member this.OfType(typ) =
-      { new IntrospectionConfigurerOf with
-        member __.ToBeDisabled() =
-          typeIntrospectionModeMap.Add(typ, Disabled)
-          this :> IntrospectionConfigurer
-        member __.ToBeEnabled() =
-          typeIntrospectionModeMap.Add(typ, Enabled)
-          this :> IntrospectionConfigurer
-        member __.ToUse(introspector) =
-          typeIntrospectorMap.Add(typ, introspector)
-          this :> IntrospectionConfigurer
-      }
-    member this.SetDefaultIntrospector(introspector) =
-      defaultIntrospector <- introspector
-      this :> IntrospectionConfigurer
+    member this.OfNode(path) = this.OfNode(path)
+    member this.OfType(typ) = this.OfType(typ)
+    member this.SetDefaultIntrospector(introspector) = this.SetDefaultIntrospector(introspector)
     member this.SetInstanceFactory(factory) =
       instanceFactory <- InstanceFactoryFallbackDecorator(factory)
       this :> IntrospectionConfigurer
@@ -135,25 +164,10 @@ and IntrospectionService(objectDifferBuilder: ObjectDifferBuilder) =
       this :> IntrospectionConfigurer
 
   interface IsIntrospectableResolver with
-    member __.IsIntrospectable(node) =
-      match node.Type with
-      | null -> false
-      | typ ->
-        if isPrimitiveTypeEnumOrArray typ then false
-        elif nodePathIntrospectionModeHolder.ValueForNodePath(node.Path) = Some Disabled then false
-        else
-          match typeIntrospectionModeMap.TryGetValue(typ) with
-          | true, Disabled -> false
-          | true, _ -> true
-          | false, _ -> false
+    member this.IsIntrospectable(node) = this.IsIntrospectable(node)
 
   interface TypeInfoResolver with
-    member this.TypeInfoForNode(node) =
-      let beanType = node.Type
-      let introspector = this.IntrospectorForNode(node)
-      let typeInfo = introspector.Introspect(beanType)
-      typeInfo.InstanceFactory <- instanceFactory
-      typeInfo
+    member this.TypeInfoForNode(node) = this.TypeInfoForNode(node)
 
   interface PropertyAccessExceptionHandlerResolver with
     member __.ResolvePropertyAccessExceptionHandler(_, _) = defaultPropertyAccessExceptionHandler
