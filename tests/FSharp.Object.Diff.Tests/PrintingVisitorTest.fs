@@ -12,7 +12,7 @@ type TestablePrintingVisitor(working: obj, base_: obj) =
   override __.Print(text) = sb.AppendLine(text) |> ignore
   member __.Output = sb.ToString()
 
-let ``omits intermediate nodes with changed child nodes`` = skip "" <| test {
+let ``omits intermediate nodes with changed child nodes`` = test {
   let c1 = { Id = "c"; Reference = None }
   let b1 = { Id = "b"; Reference = Some c1 }
   let a1 = { Id = "a"; Reference = Some b1 }
@@ -22,7 +22,7 @@ let ``omits intermediate nodes with changed child nodes`` = skip "" <| test {
   let rootNode = ObjectDifferBuilder.BuildDefault().Compare(a1, a2)
   let visitor = TestablePrintingVisitor(a1, a2)
   rootNode.Visit(visitor)
-  do! assertEquals ("Property at path '/reference/reference/id' has changed from [ d ] to [ c ]" + Environment.NewLine) visitor.Output 
+  do! assertEquals ("Property at path '/Reference/Value/Reference/Value/Id' has changed from [ d ] to [ c ]" + Environment.NewLine) visitor.Output 
 }
 
 let ``prints root node if unchanged and without children`` = test {

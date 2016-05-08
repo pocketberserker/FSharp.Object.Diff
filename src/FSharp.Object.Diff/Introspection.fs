@@ -131,7 +131,10 @@ with
       let typeInfo = TypeInfo(typ)
       typ.GetProperties()
       |> Array.iter (fun x ->
-        if x.CanRead then typeInfo.AddPropertyAccessor(PropertyAccessor(x))
+        if x.CanRead then
+          let r = x.GetGetMethod()
+          if Array.isEmpty <| r.GetParameters() && not <| r.IsStatic then
+            typeInfo.AddPropertyAccessor(PropertyAccessor(x))
       )
       typeInfo
 
