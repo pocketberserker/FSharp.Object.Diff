@@ -166,11 +166,11 @@ and [<AllowNullLiteral>] DiffNode(parentNode: DiffNode, accessor: Accessor, valu
       !result |> unbox<bool>
 
   member this.AddChild(node: DiffNode) =
-    if node = this then
+    if Object.ReferenceEquals(node, this) then
       raise <| ArgumentException("Detected attempt to add a node to itself. This would cause inifite loops and must never happen.")
     elif node.IsRootNode then
       raise <| ArgumentException("Detected attempt to add root node as child. This is not allowed and must be a mistake.")
-    elif node.ParentNode <> null && node.ParentNode <> this then
+    elif node.ParentNode <> null && not <| Object.ReferenceEquals(node.ParentNode, this) then
       raise <| ArgumentException("Detected attempt to add child node that is already the child of another node. Adding nodes multiple times is not allowed, since it could cause infinite loops.")
     if node.ParentNode = null then
       node.ParentNode <- this
