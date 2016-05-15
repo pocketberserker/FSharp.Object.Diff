@@ -77,13 +77,13 @@ let run () =
   assert node.HasChildren
   assert (node.ChildCount = 1)
 
-  let contactsNode = node.Child("contacts")
+  let contactsNode = node.Child("Contacts")
   assert contactsNode.HasChanges
 
   let pinkmanNode = contactsNode.Child(CollectionItemElementSelector(jessePinkman))
   assert pinkmanNode.HasChanges
 
-  let middleNameNode = pinkmanNode.Child("middleName")
+  let middleNameNode = pinkmanNode.Child("MiddleName")
   assert middleNameNode.HasChanges
   assert (middleNameNode.CanonicalGet(phoneBook) = null)
   assert (middleNameNode.CanonicalGet(modifiedPhoneBook) = box "Bruce")
@@ -91,7 +91,7 @@ let run () =
   let whiteNode = contactsNode.Child(CollectionItemElementSelector(walterWhite))
   assert whiteNode.HasChanges
 
-  let whiteMiddleNameNode = whiteNode.Child("middleName")
+  let whiteMiddleNameNode = whiteNode.Child("MiddleName")
   assert whiteMiddleNameNode.HasChanges
   assert (whiteMiddleNameNode.CanonicalGet(phoneBook) = null)
   assert (whiteMiddleNameNode.CanonicalGet(modifiedPhoneBook) = box "Hartwell")
