@@ -230,13 +230,12 @@ type CollectionDiffer(
       )
 
   let contains (haystack: System.Collections.IEnumerable) needle (identityStrategy: IdentityStrategy) =
-    let rec inner result (e: System.Collections.IEnumerator) =
-      if result then result
-      elif e.MoveNext() then 
-        if identityStrategy.Equals(needle, e.Current) then inner true e
-        else inner result e
+    let rec inner (e: System.Collections.IEnumerator) =
+      if e.MoveNext() then 
+        if identityStrategy.Equals(needle, e.Current) then true
+        else inner e
       else false
-    inner false (haystack.GetEnumerator())
+    inner (haystack.GetEnumerator())
 
   let remove (from: ResizeArray<obj>) these identityStrategy =
     from.RemoveAll(fun item -> contains these item identityStrategy)
