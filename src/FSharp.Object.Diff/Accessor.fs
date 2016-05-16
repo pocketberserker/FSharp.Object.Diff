@@ -34,16 +34,17 @@ type PropertyAwareAccessor =
 
 type CollectionItemAccessor(referenceItem: obj, identityStrategy: IdentityStrategy) =
 
-  let objectAsCollection: obj -> ICollection<obj> = function
-  | null -> null
-  | :? ICollection<obj> as c -> c
-  | o -> raise <| ArgumentException(o.GetType().FullName)
+  let objectAsCollection: obj -> Choice<System.Collections.IList option, System.Collections.IEnumerable, ArgumentException> = function
+  | null -> Choice1Of3 None
+  | :? System.Collections.IList as l -> Choice1Of3(Some l)
+  | :? System.Collections.IEnumerable as e -> Choice2Of3 e
+  | o -> Choice3Of3(ArgumentException(o.GetType().FullName))
 
-  let remove (xs: ICollection<_>) =
+  let remove (xs: System.Collections.IList) =
     let rec inner index =
       if index >= xs.Count then ()
       else
-        let x = Seq.nth index xs
+        let x = xs.[index]
         if x <> null && identityStrategy.Equals(x, referenceItem) then
           xs.Remove(x) |> ignore
         else inner (index + 1)
@@ -56,26 +57,49 @@ type CollectionItemAccessor(referenceItem: obj, identityStrategy: IdentityStrate
     if identityStrategy = null then selector else selector.WithIdentityStrategy(identityStrategy)
     :> ElementSelector
 
-  member internal __.TryGet(target) =
-    objectAsCollection target
-    |> Seq.tryFind (fun item -> item <> null && identityStrategy.Equals(item, referenceItem))
+  member private __.TryGet(target: obj) =
+
+    let rec inner (e: System.Collections.IEnumerator) =
+      if e.MoveNext() then
+        if e.Current <> null && identityStrategy.Equals(e.Current, referenceItem) then
+          Some e.Current
+        else inner e
+      else None
+        
+    match objectAsCollection target with
+    | Choice1Of3 None -> Choice1Of3 None
+    | Choice1Of3(Some cs) -> cs.GetEnumerator() |> inner |> Choice1Of3
+    | Choice2Of3 e -> Choice2Of3 e
+    | Choice3Of3 e -> Choice3Of3 e
 
   member this.Get(target: obj) =
     match this.TryGet(target) with
-    | Some o -> o
-    | None -> null
+    | Choice1Of3 None -> null
+    | Choice1Of3(Some v) -> v
+    | Choice2Of3 v -> box v
+    | Choice3Of3 e -> raise e
 
   member __.Unset(target: obj) =
-    let targetCollection = objectAsCollection target
-    if targetCollection <> null then
+    match objectAsCollection target with
+    | Choice1Of3 None -> ()
+    | Choice1Of3(Some targetCollection) ->
       remove targetCollection
+    | Choice2Of3 _ ->
+      target.GetType().FullName
+      |> failwithf "%s can't remove value."
+    | Choice3Of3 e -> raise e
 
   member this.Set(target: obj, value: obj) =
-    let targetCollection = objectAsCollection target
-    if targetCollection <> null then
+    match objectAsCollection target with
+    | Choice1Of3 None -> ()
+    | Choice1Of3(Some targetCollection) ->
       let previous = this.Get(target)
       if previous <> null then this.Unset(target)
-      targetCollection.Add(value)
+      targetCollection.Add(value) |> ignore
+    | Choice2Of3 _ ->
+      target.GetType().FullName
+      |> failwithf "%s can't add and remove value."
+    | Choice3Of3 e -> raise e
 
   override this.ToString() =
     "collection item " + this.ElementSelector.ToString()
