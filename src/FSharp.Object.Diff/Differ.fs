@@ -14,19 +14,20 @@ type PrimitiveDiffer(primitiveDefaultValueModeResolver: PrimitiveDefaultValueMod
   let shouldTreatPrimitiveDefaultsAsUnassigned node =
     primitiveDefaultValueModeResolver.ResolvePrimitiveDefaultValueMode(node) = UnAssigned
   member __.Accepts(typ: Type) = Type.isPrimitive typ
+  member this.Compare(parentNode: DiffNode, instances: Instances) =
+    if not <| this.Accepts(instances.Type) then
+      raise <| ArgumentException("The primitive differ can only deal with primitive types.")
+    let node = DiffNode(parentNode, instances.SourceAccessor, instances.Type)
+    if shouldTreatPrimitiveDefaultsAsUnassigned node && instances.HasBeenAdded then
+      node.State <- Added
+    elif shouldTreatPrimitiveDefaultsAsUnassigned node && instances.HasBeenRemoved then
+      node.State <- Removed
+    elif not <| instances.AreEqual then
+      node.State <- Changed
+    node
   interface Differ with
     member this.Accepts(typ: Type) = this.Accepts(typ)
-    member this.Compare(parentNode, instances) =
-      if not <| this.Accepts(instances.Type) then
-        raise <| ArgumentException("The primitive differ can only deal with primitive types.")
-      let node = DiffNode(parentNode, instances.SourceAccessor, instances.Type)
-      if shouldTreatPrimitiveDefaultsAsUnassigned node && instances.HasBeenAdded then
-        node.State <- Added
-      elif shouldTreatPrimitiveDefaultsAsUnassigned node && instances.HasBeenRemoved then
-        node.State <- Removed
-      elif not <| instances.AreEqual then
-        node.State <- Changed
-      node
+    member this.Compare(parentNode, instances) = this.Compare(parentNode, instances)
 
 type DifferProvider() =
 

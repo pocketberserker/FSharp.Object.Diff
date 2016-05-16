@@ -73,6 +73,7 @@
     <Compile Include="PropertyAccessorTest.fs" />
     <Compile Include="DifferProviderTest.fs" />
     <Compile Include="BeanDifferTest.fs" />
+    <Compile Include="PrimitiveDifferTest.fs" />
     <Compile Include="StandardIntrospectorTest.fs" />
     <Compile Include="InstancesTest.fs" />
     <Compile Include="IntrospectionServiceTest.fs" />
