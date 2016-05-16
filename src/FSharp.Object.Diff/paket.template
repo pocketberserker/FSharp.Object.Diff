@@ -10,6 +10,6 @@ licenseUrl
 requireLicenseAcceptance
     false
 tags
-    fsharp F# object diff
+    fsharp, F#, object, diff
 description
-
+    FSharp.Object.Diff is a port of java-object-diff.
