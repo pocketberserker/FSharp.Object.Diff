@@ -41,8 +41,7 @@ type InstanceFactoryFallbackDecorator(instanceFactory: InstanceFactory) =
     member __.NewInstanceOfType(typ: Type) =
       let instance = instanceFactory.NewInstanceOfType(typ)
       if instance <> null then instance
-      // TODO: implement PublicNoArgsConstructorInstanceFactory
-      else raise <| NotImplementedException()
+      else PublicNoArgsConstructorInstanceFactory.PublicNoArgsConstructorInstanceFactory.NewInstanceOfType(typ)
 
 type DefaultPropertyAccessExceptionHandler() =
   interface PropertyAccessExceptionHandler with
