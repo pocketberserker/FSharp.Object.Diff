@@ -115,9 +115,9 @@ type CollectionItemAccessor(referenceItem: obj, identityStrategy: IdentityStrate
 
 type MapEntryAccessor(referenceKey: obj) =
 
-  let objectToDictionary: obj -> Dictionary<obj, obj> = function
+  let objectToDictionary: obj -> System.Collections.IDictionary = function
   | null -> null
-  | :? Dictionary<obj, obj> as d -> d
+  | :? System.Collections.IDictionary as d -> d
   | o -> raise <| ArgumentException(o.GetType().FullName)
 
   member __.ElementSelector = MapKeyElementSelector(referenceKey) :> ElementSelector
@@ -141,7 +141,7 @@ type MapEntryAccessor(referenceKey: obj) =
   member __.Set(target: obj, value: obj) =
     let target = objectToDictionary target
     if target <> null then
-      if target.ContainsKey(referenceKey) then target.Remove(referenceKey) |> ignore
+      if target.Contains(referenceKey) then target.Remove(referenceKey) |> ignore
       target.Add(referenceKey, value)
 
   member __.Unset(target: obj) =
