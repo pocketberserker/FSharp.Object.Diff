@@ -6,16 +6,18 @@ open System
 type InstanceFactory =
   abstract member NewInstanceOfType: Type -> obj
 
-type PublicNoArgsConstructorInstanceFactory() =
+type PublicNoArgsConstructorInstanceFactory = PublicNoArgsConstructorInstanceFactory
+with
+  member __.NewInstanceOfType(typ: Type) =
+    try
+      typ.GetConstructor([||]).Invoke([||])
+    with e ->
+      raise <| TypeInitializationException(
+        sprintf "Failed to create instance of type '%s'. Reason: %s" typ.FullName "Attempt to access the public no-args constructor caused an exception",
+        e
+      )
   interface InstanceFactory with
-    member __.NewInstanceOfType(typ: Type) =
-      try
-        typ.GetConstructor([||]).Invoke([||])
-      with e ->
-        raise <| TypeInitializationException(
-          sprintf "Failed to create instance of type '%s'. Reason: %s" typ.FullName "Attempt to access the public no-args constructor caused an exception",
-          e
-        )
+    member this.NewInstanceOfType(typ: Type) = this.NewInstanceOfType(typ)
 
 [<AllowNullLiteral>]
 type TypeInfo(typ: Type) =

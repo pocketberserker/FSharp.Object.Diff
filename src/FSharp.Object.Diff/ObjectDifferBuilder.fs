@@ -78,7 +78,7 @@ and IntrospectionService(objectDifferBuilder: ObjectDifferBuilder) =
   let nodePathIntrospectionModeHolder = NodePathValueHolder<IntrospectionServiceIntrospectionMode>()
   let typeIntrospectorMap = Dictionary<Type, Introspector>()
   let typeIntrospectionModeMap = Dictionary<Type, IntrospectionServiceIntrospectionMode>()
-  let mutable instanceFactory= PublicNoArgsConstructorInstanceFactory() :> InstanceFactory
+  let mutable instanceFactory = PublicNoArgsConstructorInstanceFactory :> InstanceFactory
   let mutable defaultIntrospector: Introspector = null
   let mutable defaultPropertyAccessExceptionHandler: PropertyAccessExceptionHandler =
     DefaultPropertyAccessExceptionHandler()
