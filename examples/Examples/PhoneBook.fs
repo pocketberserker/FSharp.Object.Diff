@@ -1,5 +1,6 @@
 ﻿module PhoneBook
 
+open System
 open System.Collections.Generic
 open FSharp.Object.Diff
 
@@ -9,6 +10,8 @@ type PhoneNumber = {
   AreaCode: string
   LocalNumber: string
 }
+with
+  override this.ToString() = this.CountryCode + " (" + this.AreaCode + ") " + this.LocalNumber
   
 type Contact(firstName: string, lastName: string) =
 
@@ -32,6 +35,22 @@ type Contact(firstName: string, lastName: string) =
     for KeyValue(kind, phoneNumber) in contact.PhoneNumbers do
       copy.PhoneNumber <- (kind, phoneNumber)
     copy
+
+  override this.Equals(o) =
+    match o with
+    | null -> false
+    | :? Contact as o ->
+      if Object.ReferenceEquals(this, o) then true
+      elif (if firstName <> null then firstName <> o.FirstName else o.FirstName <> null) then false
+      elif (if lastName <> null then lastName <> o.LastName else o.LastName <> null) then false
+      else true
+    | _ -> false
+
+  override __.GetHashCode() =
+    let result = if firstName <> null then hash firstName else 0
+    31 * result + (if lastName <> null then hash lastName else 0)
+
+  override __.ToString() = [firstName; lastName] |> String.concat " "
 
 type PhoneBook(name: string) =
 
@@ -72,26 +91,4 @@ let run () =
   modifiedPhoneBook.TryGetContact("Walter", "White") |> Option.iter (fun x -> x.MiddleName <- "Hartwell")
 
   let node = ObjectDifferBuilder.BuildDefault().Compare(modifiedPhoneBook, phoneBook)
-
-  assert node.HasChanges
-  assert node.HasChildren
-  assert (node.ChildCount = 1)
-
-  let contactsNode = node.Child("Contacts")
-  assert contactsNode.HasChanges
-
-  let pinkmanNode = contactsNode.Child(CollectionItemElementSelector(jessePinkman))
-  assert pinkmanNode.HasChanges
-
-  let middleNameNode = pinkmanNode.Child("MiddleName")
-  assert middleNameNode.HasChanges
-  assert (middleNameNode.CanonicalGet(phoneBook) = null)
-  assert (middleNameNode.CanonicalGet(modifiedPhoneBook) = box "Bruce")
-
-  let whiteNode = contactsNode.Child(CollectionItemElementSelector(walterWhite))
-  assert whiteNode.HasChanges
-
-  let whiteMiddleNameNode = whiteNode.Child("MiddleName")
-  assert whiteMiddleNameNode.HasChanges
-  assert (whiteMiddleNameNode.CanonicalGet(phoneBook) = null)
-  assert (whiteMiddleNameNode.CanonicalGet(modifiedPhoneBook) = box "Hartwell")
+  node.Visit(PrintingVisitor(modifiedPhoneBook, phoneBook))
