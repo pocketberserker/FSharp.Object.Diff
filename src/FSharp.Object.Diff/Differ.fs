@@ -275,8 +275,8 @@ type CollectionDiffer(
   let newNode parentNode (collectionInstances: Instances) =
     DiffNode(parentNode, collectionInstances.SourceAccessor, collectionInstances.Type)
 
-  member __.Accepts(typ: Type)  =
-    typeof<System.Collections.IEnumerable>.IsAssignableFrom(typ)
+  member __.Accepts(typ: Type) =
+    typeof<System.Collections.IEnumerable>.IsAssignableFrom(typ) && typ <> typeof<string>
 
   member this.Compare(parentNode, instances) =
     let collectionNode = newNode parentNode instances
