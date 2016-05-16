@@ -261,8 +261,8 @@ type CollectionDiffer(
     let base_ = collectionInstances.TryGetBase<System.Collections.IEnumerable>() |> getOrEmpty
 
     let added = ResizeArray(working)
-    let removed = ResizeArray(working)
-    let known = ResizeArray(working)
+    let removed = ResizeArray(base_)
+    let known = ResizeArray(base_)
 
     remove added base_ identityStrategy
     remove removed working identityStrategy
