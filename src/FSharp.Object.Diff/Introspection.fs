@@ -68,24 +68,36 @@ type PropertyAccessor(property: PropertyInfo) =
   let readMethod = property.GetGetMethod()
   let writeMethod = property.GetSetMethod()
 
+  let tryToReplaceCollectionContent (target: System.Collections.IList) (value: System.Collections.IList) =
+    if target = null then false
+    else
+      try
+        target.Clear()
+        for v in value do target.Add(v) |> ignore
+        true
+      with _ ->
+        // TODO: logging
+        // logger.debug("Failed to replace content of existing Collection", unmodifiable)
+        false
+
+  let tryToReplaceIDictionaryContent (target: System.Collections.IDictionary) (value: System.Collections.IDictionary) =
+    if target = null then false
+    else
+      try
+        target.Clear()
+        for k in value.Keys do target.Add(k, value.[k]) |> ignore
+        true
+      with _ ->
+        // TODO: logging
+        // logger.debug("Failed to replace content of existing IDictionary", unmodifiable)
+        false
+
   new(propertyName, typ: Type) = PropertyAccessor(typ.GetProperty(propertyName))
 
   member __.ReadMethodAttributes =
     Attribute.GetCustomAttributes(property)
     |> Array.toSeq
     |> Seq.distinct
-
-  member __.Set(target: obj, value: obj) =
-    if target = null then ()
-    elif writeMethod = null then
-      // TODO: implement
-      // tryToReplaceContentOfCollectionTypes target, value
-      ()
-    else
-      try
-        writeMethod.Invoke(target, [| value |]) |> ignore
-      with e ->
-        raise <| PropertyWriteException(propertyName, target.GetType(), value, e)
 
   member __.Get(target: obj) =
     if target = null then null
@@ -94,6 +106,28 @@ type PropertyAccessor(property: PropertyInfo) =
         readMethod.Invoke(target, [||])
       with e ->
         raise <| PropertyReadException(propertyName, target.GetType(), e)
+
+  member private this.TryToReplaceContentOfCollectionTypes(target: obj, value: obj) =
+    if typeof<System.Collections.IList>.IsAssignableFrom(typ) then
+      tryToReplaceCollectionContent (this.Get(target) :?> System.Collections.IList) (value :?> System.Collections.IList)
+      |> ignore
+    if typeof<System.Collections.IDictionary>.IsAssignableFrom(typ) then
+      tryToReplaceIDictionaryContent (this.Get(target) :?> System.Collections.IDictionary) (value :?> System.Collections.IDictionary)
+      |> ignore
+      
+    // TODO; logging
+    // logger.info("Couldn't set new value '{}' for property '{}'", value, propertyName)
+
+  member this.Set(target: obj, value: obj) =
+    if target = null then ()
+    elif writeMethod = null then
+      this.TryToReplaceContentOfCollectionTypes(target, value)
+      ()
+    else
+      try
+        writeMethod.Invoke(target, [| value |]) |> ignore
+      with e ->
+        raise <| PropertyWriteException(propertyName, target.GetType(), value, e)
 
   member this.Unset(target: obj) = this.Set(target, null)
 
