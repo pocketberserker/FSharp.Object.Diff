@@ -22,7 +22,7 @@ type PrimitiveDiffer(primitiveDefaultValueModeResolver: PrimitiveDefaultValueMod
       let node = DiffNode(parentNode, instances.SourceAccessor, instances.Type)
       if shouldTreatPrimitiveDefaultsAsUnassigned node && instances.HasBeenAdded then
         node.State <- Added
-      elif shouldTreatPrimitiveDefaultsAsUnassigned node && instances.HasBeenAdded then
+      elif shouldTreatPrimitiveDefaultsAsUnassigned node && instances.HasBeenRemoved then
         node.State <- Removed
       elif not <| instances.AreEqual then
         node.State <- Changed
