@@ -16,7 +16,9 @@ let run () =
   let mapNode = ObjectDifferBuilder.BuildDefault().Compare(working, base_)
   mapNode.VisitChildren({ new NodeVisitor with
     member __.Node(node, visit) =
-      let key = (node.ElementSelector :?> MapKeyElementSelector).Key
-      let value = node.CanonicalGet(working)
-      printfn "%A => %A" key value
+      match node.ElementSelector with
+      | :? MapKeyElementSelector as selector ->
+        node.CanonicalGet(working)
+        |> printfn "%A => %A" selector.Key
+      | _ -> ()
   })
