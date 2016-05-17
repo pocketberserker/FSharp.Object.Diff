@@ -53,7 +53,7 @@ type CollectionItemElementSelector(item: obj, identityStrategy: IdentityStrategy
       if obj.ReferenceEquals(this, other) then true
       else
         if item <> null then identityStrategy.Equals(item, other.Item)
-        else other.Item <> null
+        else other.Item = null
     | _ -> false
 
   override __.GetHashCode() = 31
