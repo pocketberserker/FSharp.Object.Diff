@@ -147,10 +147,15 @@ and [<AllowNullLiteral>] DiffNode(parentNode: DiffNode, accessor: Accessor, valu
     with :? StopVisitationException -> ()
 
   member __.VisitChildren(visitor: NodeVisitor) =
-    for child in children.Values do
-      try
-        child.Visit(visitor)
-      with :? StopVisitationException -> ()
+    let rec inner (xs: DiffNode seq) =
+      if Seq.isEmpty xs then ()
+      else
+        try
+          let child = Seq.head xs
+          child.Visit(visitor)
+          inner (Seq.skip 1 xs)
+        with :? StopVisitationException -> ()
+    inner children.Values
 
   member this.HasChanges =
     match this.State with
