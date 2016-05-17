@@ -67,17 +67,16 @@ type CollectionItemAccessor(referenceItem: obj, identityStrategy: IdentityStrate
       else None
         
     match objectAsCollection target with
-    | Choice1Of3 None -> Choice1Of3 None
-    | Choice1Of3(Some cs) -> cs.GetEnumerator() |> inner |> Choice1Of3
-    | Choice2Of3 e -> Choice2Of3 e
-    | Choice3Of3 e -> Choice3Of3 e
+    | Choice1Of3 None -> Choice1Of2 None
+    | Choice1Of3(Some cs) -> cs.GetEnumerator() |> inner |> Choice1Of2
+    | Choice2Of3 e -> e.GetEnumerator() |> inner |> Choice1Of2
+    | Choice3Of3 e -> Choice2Of2 e
 
   member this.Get(target: obj) =
     match this.TryGet(target) with
-    | Choice1Of3 None -> null
-    | Choice1Of3(Some v) -> v
-    | Choice2Of3 v -> box v
-    | Choice3Of3 e -> raise e
+    | Choice1Of2 None -> null
+    | Choice1Of2(Some v) -> v
+    | Choice2Of2 e -> raise e
 
   member __.Unset(target: obj) =
     match objectAsCollection target with

@@ -46,7 +46,15 @@ let setup (f: MockTarget -> MockTarget) =
       target.ComparisonStrategyResolver.Create(),
       target.IdentityStrategyResolver.Create()
     )
-  provider.Push(differ)
+  provider.PushAll(
+    [
+      differ
+      PrimitiveDiffer(
+        Mock<PrimitiveDefaultValueModeResolver>()
+          .SetupMethod(fun x -> <@ x.ResolvePrimitiveDefaultValueMode @>)
+          .Returns(Assigned).Create()
+      )
+    ])
   {
     Instances = Instances(RootAccessor, Seq.empty<string>, Seq.empty<string>, Seq.empty<string>)
     Differ = differ
@@ -74,8 +82,14 @@ let ``returns untouched node when instances are same`` = test {
 }
 
 let ``returns added node when instance has been added`` = test {
-  let target = setup id
-  let instances = Instances(RootAccessor, seq ["a"], null, null)
+  let target = setup (fun target ->
+    {
+      target with
+        IdentityStrategyResolver =
+          target.IdentityStrategyResolver.SetupMethod(fun x -> <@ x.ResolveIdentityStrategy @>).Returns(EqualsIdentityStrategy)
+      }
+  )
+  let instances = Instances(RootAccessor, seq [0], null, null)
   do! assertEquals Added (target.Differ.Compare(DiffNode.Root, instances).State)
 }
 
@@ -87,7 +101,7 @@ let ``returns removed node when instance has been removed`` = test {
           target.IdentityStrategyResolver.SetupMethod(fun x -> <@ x.ResolveIdentityStrategy @>).Returns(EqualsIdentityStrategy)
       }
   )
-  let instances = Instances(RootAccessor, null, seq ["a"], null)
+  let instances = Instances(RootAccessor, null, seq [0], null)
   do! assertEquals Removed (target.Differ.Compare(DiffNode.Root, instances).State)
 }
 
