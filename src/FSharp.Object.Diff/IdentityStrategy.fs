@@ -8,4 +8,4 @@ type EqualsIdentityStrategy = EqualsIdentityStrategy
 with
   interface IdentityStrategy with
     member __.Equals(working, base_) =
-      obj.Equals(working, base_)
+      obj.IsEqual(working, base_)
