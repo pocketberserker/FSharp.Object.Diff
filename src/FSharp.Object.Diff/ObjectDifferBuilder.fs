@@ -374,6 +374,32 @@ and ComparisonService(objectDifferBuilder: ObjectDifferBuilder) =
   let typeComparisonStrategyMap = Dictionary<Type, ComparisonStrategy>()
   let primitiveDefaultValueMode =  ref UnAssigned
 
+  member __.ResolveComparisonStrategy(node: DiffNode) =
+    let valueType = node.Type
+    match nodePathComparisonStrategies.ValueForNodePath(node.Path) with
+    | Some comparisonStrategy -> comparisonStrategy
+    | None ->
+      match typeComparisonStrategyMap.TryGetValue(valueType) with
+      | true, v -> v
+      | false, _ ->
+        if Type.isSimple valueType then
+          if Type.isComparable valueType then ComparableComparisonStrategy :> ComparisonStrategy
+          else equalsOnlyComparisonStrategy :> ComparisonStrategy
+        else
+          let comparisonStrategyResolver = ObjectDiffPropertyComparisonStrategyResolver
+          let objectDiffProperty = node.GetPropertyAttribute<ObjectDiffPropertyAttribute>()
+          match comparisonStrategyResolver.ComparisonStrategyForAttribute(objectDiffProperty) with
+          | Some v -> v :> ComparisonStrategy
+          | None when valueType <> null ->
+            let objectDiffEqualsOnlyType =
+              let xs = valueType.GetCustomAttributes(typeof<ObjectDiffEqualsOnlyAttribute>, false)
+              if Array.isEmpty xs then null
+              else xs.[0] :?> ObjectDiffEqualsOnlyAttribute
+            match comparisonStrategyResolver.ComparisonStrategyForAttribute(objectDiffEqualsOnlyType) with
+            | Some v -> v :> ComparisonStrategy
+            | None -> null
+          | None -> null
+
   interface ComparisonConfigurer with
     member __.And() = objectDifferBuilder
     member this.OfNode(nodePath) =
@@ -387,35 +413,7 @@ and ComparisonService(objectDifferBuilder: ObjectDifferBuilder) =
       :> ComparisonConfigurerOf
   
   interface ComparisonStrategyResolver with
-    member __.ResolveComparisonStrategy(node) =
-      let valueType = node.Type
-      match typeComparisonStrategyMap.TryGetValue(valueType) with
-      | true, v -> v
-      | false, _ ->
-        match nodePathComparisonStrategies.ValueForNodePath(node.Path) with
-        | Some comparisonStrategy -> comparisonStrategy
-        | None ->
-          let valeuType = node.Type
-          match typeComparisonStrategyMap.TryGetValue(valueType) with
-          | true, v -> v
-          | false, _ ->
-            if Type.isSimple valueType then
-              if Type.isComparable valueType then ComparableComparisonStrategy :> ComparisonStrategy
-              else equalsOnlyComparisonStrategy :> ComparisonStrategy
-            else
-              let comparisonStrategyResolver = ObjectDiffPropertyComparisonStrategyResolver
-              let objectDiffProperty = node.GetPropertyAttribute<ObjectDiffPropertyAttribute>()
-              match comparisonStrategyResolver.ComparisonStrategyForAttribute(objectDiffProperty) with
-              | Some v -> v :> ComparisonStrategy
-              | None when valueType <> null ->
-                let objectDiffEqualsOnlyType =
-                  let xs = valueType.GetCustomAttributes(typeof<ObjectDiffEqualsOnlyAttribute>, false)
-                  if Array.isEmpty xs then null
-                  else xs.[0] :?> ObjectDiffEqualsOnlyAttribute
-                match comparisonStrategyResolver.ComparisonStrategyForAttribute(objectDiffEqualsOnlyType) with
-                | Some v -> v :> ComparisonStrategy
-                | None -> null
-              | None -> null
+    member this.ResolveComparisonStrategy(node) = this.ResolveComparisonStrategy(node)
   
   interface PrimitiveDefaultValueModeResolver with
     member __.ResolvePrimitiveDefaultValueMode(_) = !primitiveDefaultValueMode
