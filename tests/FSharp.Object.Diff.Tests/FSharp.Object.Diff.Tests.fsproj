@@ -78,6 +78,7 @@
     <Compile Include="StandardIntrospectorTest.fs" />
     <Compile Include="InstancesTest.fs" />
     <Compile Include="IntrospectionServiceTest.fs" />
+    <Compile Include="ComparisonServiceTest.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
