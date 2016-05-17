@@ -16,22 +16,22 @@ type ComparisonStrategyResolver =
 type PrimitiveDefaultValueModeResolver =
   abstract member ResolvePrimitiveDefaultValueMode: DiffNode -> PrimitiveDefaultValueMode
 
-type EqualsOnlyComparisonStrategy(equalsValueProviderMethod: string) =
+type EqualsOnlyComparisonStrategy(propertyName: string) =
 
   static let access (target: obj) methodName =
     if target = null then null
     else
-      let m = target.GetType().GetMethod(methodName)
-      m.Invoke(target, [||])
+      let m = target.GetType().GetProperty(methodName)
+      m.GetValue(target, [||])
 
   new() = EqualsOnlyComparisonStrategy(null)
 
   interface ComparisonStrategy with
     member __.Compare(node, _, working, base_) =
       let result =
-        if equalsValueProviderMethod <> null then
-          let workingValue = access working equalsValueProviderMethod
-          let baseValue = access base_ equalsValueProviderMethod
+        if propertyName <> null then
+          let workingValue = access working propertyName
+          let baseValue = access base_ propertyName
           Object.IsEqual(workingValue, baseValue)
         else Object.IsEqual(working, base_)
       if result then node.State <- Untouched
@@ -50,11 +50,11 @@ type ObjectDiffPropertyComparisonStrategyResolver =  ObjectDiffPropertyCompariso
 with
   member __.ComparisonStrategyForAttribute(attr: ObjectDiffPropertyAttribute) =
     if attr = null || not attr.EqualsOnly then None
-    elif not <| String.IsNullOrEmpty(attr.EqualsOnlyValueProviderMethod) then
-      Some(EqualsOnlyComparisonStrategy(attr.EqualsOnlyValueProviderMethod))
+    elif not <| String.IsNullOrEmpty(attr.EqualsOnlyValueProviderProperty) then
+      Some(EqualsOnlyComparisonStrategy(attr.EqualsOnlyValueProviderProperty))
     else Some(EqualsOnlyComparisonStrategy())
   member __.ComparisonStrategyForAttribute(attr: ObjectDiffEqualsOnlyAttribute) =
     if attr = null then None
-    elif not <| String.IsNullOrEmpty(attr.ValueProviderMethod) then
-      Some(EqualsOnlyComparisonStrategy(attr.ValueProviderMethod))
+    elif not <| String.IsNullOrEmpty(attr.ValueProviderProperty) then
+      Some(EqualsOnlyComparisonStrategy(attr.ValueProviderProperty))
     else Some(EqualsOnlyComparisonStrategy())

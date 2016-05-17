@@ -54,12 +54,12 @@ type ObjectDiffPropertyAttribute() =
   let mutable inclusion = Default
   let mutable equalsOnly = false
   let mutable categories: string [] = [||]
-  let mutable equalsOnlyValueProviderMethod = ""
+  let mutable equalsOnlyValueProviderProperty = ""
 
   member __.Inclusion with get () = inclusion and set(v) = inclusion <- v
   member __.EqualsOnly with get () = equalsOnly and set(v) = equalsOnly <- v
   member __.Categories with get () = categories and set(v) = categories <- v
-  member __.EqualsOnlyValueProviderMethod with get () = equalsOnlyValueProviderMethod and set(v) = equalsOnlyValueProviderMethod <- v
+  member __.EqualsOnlyValueProviderProperty with get () = equalsOnlyValueProviderProperty and set(v) = equalsOnlyValueProviderProperty <- v
 
 type PropertyAccessor(property: PropertyInfo) =
 
@@ -179,6 +179,6 @@ type IntrospectionServiceIntrospectionMode =
 type ObjectDiffEqualsOnlyAttribute() =
   inherit Attribute()
 
-  let mutable valueProviderMethod = ""
+  let mutable valueProviderProperty = ""
 
-  member __.ValueProviderMethod with get () = valueProviderMethod and set(v) = valueProviderMethod <- v
+  member __.ValueProviderProperty with get () = valueProviderProperty and set(v) = valueProviderProperty <- v
