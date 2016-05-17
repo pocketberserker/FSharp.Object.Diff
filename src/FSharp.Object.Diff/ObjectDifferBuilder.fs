@@ -363,8 +363,8 @@ and private ComparisonConfigurerOfPrimitiveTypesImpl(mode: ref<PrimitiveDefaultV
 
 and ComparisonConfigurer =
   abstract member OfNode: NodePath -> ComparisonConfigurerOf
-  abstract member OfTyoe: Type -> ComparisonConfigurerOf
-  abstract member OfPrimitiveTyoes: unit -> ComparisonConfigurerOfPrimitiveTypes
+  abstract member OfType: Type -> ComparisonConfigurerOf
+  abstract member OfPrimitiveTypes: unit -> ComparisonConfigurerOfPrimitiveTypes
   abstract member And: unit -> ObjectDifferBuilder
 
 and ComparisonService(objectDifferBuilder: ObjectDifferBuilder) =
@@ -405,10 +405,10 @@ and ComparisonService(objectDifferBuilder: ObjectDifferBuilder) =
     member this.OfNode(nodePath) =
       ComparisonConfigurerOfNodePath(this, nodePath, nodePathComparisonStrategies)
       :> ComparisonConfigurerOf
-    member this.OfPrimitiveTyoes() =
+    member this.OfPrimitiveTypes() =
       ComparisonConfigurerOfPrimitiveTypesImpl(primitiveDefaultValueMode, this)
       :> ComparisonConfigurerOfPrimitiveTypes
-    member this.OfTyoe(typ) =
+    member this.OfType(typ) =
       ComparisonConfigurerOfType(this, typ, typeComparisonStrategyMap)
       :> ComparisonConfigurerOf
   
