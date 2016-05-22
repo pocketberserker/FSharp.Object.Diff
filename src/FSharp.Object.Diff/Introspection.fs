@@ -123,7 +123,6 @@ type PropertyAccessor(property: PropertyInfo) =
     if target = null then ()
     elif writeMethod = null then
       this.TryToReplaceContentOfCollectionTypes(target, value)
-      ()
     else
       try
         writeMethod.Invoke(target, [| value |]) |> ignore
