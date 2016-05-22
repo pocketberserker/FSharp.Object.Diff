@@ -67,6 +67,7 @@ Target "AssemblyInfo" (fun _ ->
           Attribute.Product project
           Attribute.Guid "aac4b74e-0af4-459a-ba59-2a5788e3675b"
           Attribute.Description summary
+          Attribute.InternalsVisibleTo("FSharp.Object.Diff.Tests")
           Attribute.Version release.AssemblyVersion
           Attribute.FileVersion release.AssemblyVersion
           Attribute.InformationalVersion release.NugetVersion ]
