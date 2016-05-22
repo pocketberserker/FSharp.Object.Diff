@@ -178,9 +178,9 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
     Instances(accessor, accessor.Get(working), accessor.Get(base_), accessor.Get(fresh))
 
   member __.Working = working
-  member __.TryGetWorking<'T>() = if working <> null then Some(working :?> 'T) else None
+  member __.TryGetWorking<'T>() = if working <> null && working :? 'T then Some(working :?> 'T) else None
   member __.Base = base_
-  member __.TryGetBase<'T>() = if base_ <> null then Some(base_ :?> 'T) else None
+  member __.TryGetBase<'T>() = if base_ <> null && base_ :? 'T then Some(base_ :?> 'T) else None
   member this.Fresh: obj =
     if fresh = null then
       if Type.isPrimitive this.Type then Activator.CreateInstance(this.Type)
