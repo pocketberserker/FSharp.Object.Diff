@@ -1,3 +1,9 @@
+### 0.3.0 - May 22 2016
+- change accss modifier
+- fix Instances#TryGetWork, Instances#TryGetWorking
+- remove string type check from CollectionDiffer
+- reimplement dictionary differ and dictionary accessor
+
 ### 0.2.0 - May 18 2016
 - fix copy target collection in CollectionDiffer
 - fix API in ComparisonService#ResolveResolveComparisonStrategy
