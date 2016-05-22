@@ -42,7 +42,6 @@ module Type =
     typeof<Guid>
 
     typeof<BigInteger>
-    typeof<string>
     typeof<StringBuilder>
     typeof<DateTime>
     typeof<DateTimeOffset>
