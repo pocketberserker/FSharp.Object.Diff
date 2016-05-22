@@ -1,5 +1,5 @@
 [<AutoOpen>]
-module FSharp.Object.Diff.TypeSyntax
+module internal FSharp.Object.Diff.TypeSyntax
 
 open System
 open System.Numerics

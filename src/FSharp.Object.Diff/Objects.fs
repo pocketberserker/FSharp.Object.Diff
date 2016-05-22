@@ -1,5 +1,5 @@
 [<AutoOpen>]
-module FSharp.Object.Diff.ObjectSyntax
+module internal FSharp.Object.Diff.ObjectSyntax
 
 open System
 
