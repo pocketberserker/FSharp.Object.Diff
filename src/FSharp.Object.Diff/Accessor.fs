@@ -1,6 +1,7 @@
 ﻿namespace FSharp.Object.Diff
 
 open System
+open System.Collections
 open System.Collections.Generic
 
 type Accessor =
@@ -34,13 +35,13 @@ type PropertyAwareAccessor =
 
 type CollectionItemAccessor(referenceItem: obj, identityStrategy: IdentityStrategy) =
 
-  let objectAsCollection: obj -> Choice<System.Collections.IList option, System.Collections.IEnumerable, ArgumentException> = function
+  let objectAsCollection: obj -> Choice<IList option, IEnumerable, ArgumentException> = function
   | null -> Choice1Of3 None
-  | :? System.Collections.IList as l -> Choice1Of3(Some l)
-  | :? System.Collections.IEnumerable as e -> Choice2Of3 e
+  | :? IList as l -> Choice1Of3(Some l)
+  | :? IEnumerable as e -> Choice2Of3 e
   | o -> Choice3Of3(ArgumentException(o.GetType().FullName))
 
-  let remove (xs: System.Collections.IList) =
+  let remove (xs: IList) =
     let rec inner index =
       if index >= xs.Count then ()
       else
@@ -59,7 +60,7 @@ type CollectionItemAccessor(referenceItem: obj, identityStrategy: IdentityStrate
 
   member private __.TryGet(target: obj) =
 
-    let rec inner (e: System.Collections.IEnumerator) =
+    let rec inner (e: IEnumerator) =
       if e.MoveNext() then
         if e.Current <> null && identityStrategy.Equals(e.Current, referenceItem) then
           Some e.Current
@@ -114,9 +115,9 @@ type CollectionItemAccessor(referenceItem: obj, identityStrategy: IdentityStrate
 
 type MapEntryAccessor(referenceKey: obj) =
 
-  let objectToDictionary: obj -> System.Collections.IDictionary = function
+  let objectToDictionary: obj -> IDictionary = function
   | null -> null
-  | :? System.Collections.IDictionary as d -> d
+  | :? IDictionary as d -> d
   | o -> raise <| ArgumentException(o.GetType().FullName)
 
   member __.ElementSelector = MapKeyElementSelector(referenceKey) :> ElementSelector
@@ -214,10 +215,10 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
     elif Seq.length types = 1 then
       types |> Seq.head
     elif Seq.length types > 1 then
-      if typeof<System.Collections.IDictionary>.AllAssignableFrom(types) then
-        typeof<System.Collections.IDictionary>
-      elif typeof<System.Collections.IEnumerable>.AllAssignableFrom(types) then
-        typeof<System.Collections.IEnumerable>
+      if typeof<IDictionary>.AllAssignableFrom(types) then
+        typeof<IDictionary>
+      elif typeof<IEnumerable>.AllAssignableFrom(types) then
+        typeof<IEnumerable>
       else
         match Type.mostSpecificSharedType types with
         | Some sharedType -> sharedType

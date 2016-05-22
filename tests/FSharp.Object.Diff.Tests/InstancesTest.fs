@@ -2,6 +2,7 @@
 
 open System
 open System.Text
+open System.Collections
 open System.Collections.Generic
 open Persimmon
 open UseTestNameByReflection
@@ -23,7 +24,7 @@ let ``Type: throws IllegalArgumentException if base and working have incompatibl
 let ``Type: returns '#resultTypeName' for base of type '#baseClassName' and working of type '#workingClassName'`` = parameterize {
   source [
     (box <| ResizeArray(), box <| ResizeArray(), typeof<ResizeArray<obj>>)
-    (box <| ResizeArray(), box [], typeof<System.Collections.IEnumerable>)
+    (box <| ResizeArray(), box [], typeof<IEnumerable>)
     // FIXME: Map is not imeplemented System.Collections.IDictionary
     // (box Map.empty, box <| Dictionary(), typeof<System.Collections.IDictionary>)
   ]

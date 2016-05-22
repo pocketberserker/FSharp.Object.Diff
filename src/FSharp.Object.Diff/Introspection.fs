@@ -2,6 +2,7 @@
 
 open System
 open System.Reflection
+open System.Collections
 
 type IsIntrospectableResolver =
   abstract member IsIntrospectable: DiffNode -> bool
@@ -68,7 +69,7 @@ type PropertyAccessor(property: PropertyInfo) =
   let readMethod = property.GetGetMethod()
   let writeMethod = property.GetSetMethod()
 
-  let tryToReplaceCollectionContent (target: System.Collections.IList) (value: System.Collections.IList) =
+  let tryToReplaceCollectionContent (target: IList) (value: IList) =
     if target = null then false
     else
       try
@@ -80,7 +81,7 @@ type PropertyAccessor(property: PropertyInfo) =
         // logger.debug("Failed to replace content of existing Collection", unmodifiable)
         false
 
-  let tryToReplaceIDictionaryContent (target: System.Collections.IDictionary) (value: System.Collections.IDictionary) =
+  let tryToReplaceIDictionaryContent (target: IDictionary) (value: IDictionary) =
     if target = null then false
     else
       try
@@ -108,11 +109,11 @@ type PropertyAccessor(property: PropertyInfo) =
         raise <| PropertyReadException(propertyName, target.GetType(), e)
 
   member private this.TryToReplaceContentOfCollectionTypes(target: obj, value: obj) =
-    if typeof<System.Collections.IList>.IsAssignableFrom(typ) then
-      tryToReplaceCollectionContent (this.Get(target) :?> System.Collections.IList) (value :?> System.Collections.IList)
+    if typeof<IList>.IsAssignableFrom(typ) then
+      tryToReplaceCollectionContent (this.Get(target) :?> IList) (value :?> IList)
       |> ignore
-    if typeof<System.Collections.IDictionary>.IsAssignableFrom(typ) then
-      tryToReplaceIDictionaryContent (this.Get(target) :?> System.Collections.IDictionary) (value :?> System.Collections.IDictionary)
+    if typeof<IDictionary>.IsAssignableFrom(typ) then
+      tryToReplaceIDictionaryContent (this.Get(target) :?> IDictionary) (value :?> IDictionary)
       |> ignore
       
     // TODO; logging

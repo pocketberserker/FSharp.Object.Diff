@@ -1,6 +1,7 @@
 ﻿namespace FSharp.Object.Diff
 
 open System
+open System.Collections
 open System.Collections.Generic
 open System.Threading
 
@@ -225,12 +226,12 @@ type CollectionDiffer(
     comparisonStrategy.Compare(
       collectionNode,
       collectionInstances.Type,
-      (match collectionInstances.TryGetWorking<System.Collections.IEnumerable>() with | Some v -> v | None -> null),
-      (match collectionInstances.TryGetBase<System.Collections.IEnumerable>() with | Some v -> v | None -> null)
+      (match collectionInstances.TryGetWorking<IEnumerable>() with | Some v -> v | None -> null),
+      (match collectionInstances.TryGetBase<IEnumerable>() with | Some v -> v | None -> null)
       )
 
-  let contains (haystack: System.Collections.IEnumerable) needle (identityStrategy: IdentityStrategy) =
-    let rec inner (e: System.Collections.IEnumerator) =
+  let contains (haystack: IEnumerable) needle (identityStrategy: IdentityStrategy) =
+    let rec inner (e: IEnumerator) =
       if e.MoveNext() then 
         if identityStrategy.Equals(needle, e.Current) then true
         else inner e
@@ -247,7 +248,7 @@ type CollectionDiffer(
       differDispatcher.Dispatch(collectionNode, collectionInstances, itemAccessor)
       |> ignore
 
-  let getOrEmpty (xs: System.Collections.IEnumerable option) =
+  let getOrEmpty (xs: IEnumerable option) =
     match xs with
     | Some xs ->
       let cs = ResizeArray()
@@ -256,8 +257,8 @@ type CollectionDiffer(
     | None -> Seq.empty
 
   let compareInternally (collectionNode: DiffNode) (collectionInstances: Instances) identityStrategy =
-    let working = collectionInstances.TryGetWorking<System.Collections.IEnumerable>() |> getOrEmpty
-    let base_ = collectionInstances.TryGetBase<System.Collections.IEnumerable>() |> getOrEmpty
+    let working = collectionInstances.TryGetWorking<IEnumerable>() |> getOrEmpty
+    let base_ = collectionInstances.TryGetBase<IEnumerable>() |> getOrEmpty
 
     let added = ResizeArray(working)
     let removed = ResizeArray(base_)
@@ -276,7 +277,7 @@ type CollectionDiffer(
     DiffNode(parentNode, collectionInstances.SourceAccessor, collectionInstances.Type)
 
   member __.Accepts(typ: Type) =
-    typeof<System.Collections.IEnumerable>.IsAssignableFrom(typ) && typ <> typeof<string>
+    typeof<IEnumerable>.IsAssignableFrom(typ) && typ <> typeof<string>
 
   member this.Compare(parentNode, instances) =
     let collectionNode = newNode parentNode instances
@@ -284,11 +285,11 @@ type CollectionDiffer(
     if identityStrategy <> null then
       collectionNode.ChildIdentityStrategy <- identityStrategy
     if instances.HasBeenAdded then
-      let addedItems = instances.TryGetWorking<System.Collections.IEnumerable>() |> getOrEmpty
+      let addedItems = instances.TryGetWorking<IEnumerable>() |> getOrEmpty
       compareItems collectionNode instances addedItems identityStrategy
       collectionNode.State <- Added
     elif instances.HasBeenRemoved then
-      let removedItems = instances.TryGetBase<System.Collections.IEnumerable>() |> getOrEmpty
+      let removedItems = instances.TryGetBase<IEnumerable>() |> getOrEmpty
       compareItems collectionNode instances removedItems identityStrategy
       collectionNode.State <- Removed
     elif instances.AreSame then
@@ -310,23 +311,23 @@ type CollectionDiffer(
 type MapDiffer(differDispatcher: DifferDispatcher, comparisonStrategyResolver: ComparisonStrategyResolver) =
 
   let findAddedKeys(instances: Instances) =
-    let source = instances.TryGetWorking<System.Collections.IDictionary>()
-    let filter = instances.TryGetBase<System.Collections.IDictionary>()
+    let source = instances.TryGetWorking<IDictionary>()
+    let filter = instances.TryGetBase<IDictionary>()
     let xs = ResizeArray()
     source |> Option.iter (fun s -> for k in s.Keys do xs.Add(k))
     filter |> Option.iter (fun s -> for k in s.Keys do xs.Remove(k) |> ignore)
     xs :> obj seq
 
   let findRemovedKeys(instances: Instances) =
-    let source = instances.TryGetBase<System.Collections.IDictionary>()
-    let filter = instances.TryGetWorking<System.Collections.IDictionary>()
+    let source = instances.TryGetBase<IDictionary>()
+    let filter = instances.TryGetWorking<IDictionary>()
     let xs = ResizeArray()
     source |> Option.iter (fun s -> for k in s.Keys do xs.Add(k))
     filter |> Option.iter (fun s -> for k in s.Keys do xs.Remove(k) |> ignore)
     xs :> obj seq
 
   let findKnownKeys(instances: Instances) =
-    match instances.TryGetBase<System.Collections.IDictionary>() with
+    match instances.TryGetBase<IDictionary>() with
     | Some v ->
       let xs = ResizeArray()
       for k in v.Keys do
@@ -342,7 +343,7 @@ type MapDiffer(differDispatcher: DifferDispatcher, comparisonStrategyResolver: C
   member __.Compare(parentNode, instances: Instances) =
     let mapNode = DiffNode(parentNode, instances.SourceAccessor, instances.Type)
     if instances.HasBeenAdded then
-      match instances.TryGetWorking<System.Collections.IDictionary>() with
+      match instances.TryGetWorking<IDictionary>() with
       | Some v ->
         let xs = ResizeArray()
         for k in v.Keys do xs.Add(k)
@@ -351,7 +352,7 @@ type MapDiffer(differDispatcher: DifferDispatcher, comparisonStrategyResolver: C
       |> compareEntries mapNode instances
       mapNode.State <- Added
     elif instances.HasBeenRemoved then
-      match instances.TryGetBase<System.Collections.IDictionary>() with
+      match instances.TryGetBase<IDictionary>() with
       | Some v ->
         let xs = ResizeArray()
         for k in v.Keys do xs.Add(k)
@@ -366,8 +367,8 @@ type MapDiffer(differDispatcher: DifferDispatcher, comparisonStrategyResolver: C
         .Compare(
           mapNode,
           instances.Type,
-          (match instances.TryGetWorking<System.Collections.IDictionary>() with | Some v -> v | None -> null),
-          match instances.TryGetBase<System.Collections.IDictionary>() with | Some v -> v | None -> null)
+          (match instances.TryGetWorking<IDictionary>() with | Some v -> v | None -> null),
+          match instances.TryGetBase<IDictionary>() with | Some v -> v | None -> null)
     else
       findAddedKeys instances |> compareEntries mapNode instances
       findRemovedKeys instances |> compareEntries mapNode instances
@@ -375,7 +376,7 @@ type MapDiffer(differDispatcher: DifferDispatcher, comparisonStrategyResolver: C
     mapNode
 
   member __.Accepts(typ: Type)  =
-    if typ <> null then typeof<System.Collections.IDictionary>.IsAssignableFrom(typ)
+    if typ <> null then typeof<IDictionary>.IsAssignableFrom(typ)
     else false
   
   interface Differ with
