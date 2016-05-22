@@ -51,3 +51,13 @@ module Generic =
       do! assertEquals (box 1) (Dictionary.Generic.get typeof<IDictionary<int, int>> 0 o)
     })
   }
+
+  let ``find key`` = parameterize {
+    source [
+      dict [(0, 1)] |> box
+      Map.empty |> Map.add 0 1 |> box
+    ]
+    run (fun o -> test {
+      do! assertPred (Dictionary.Generic.containsKey typeof<IDictionary<int, int>> 0 o)
+    })
+  }

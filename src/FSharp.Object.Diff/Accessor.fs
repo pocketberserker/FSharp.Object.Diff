@@ -138,7 +138,9 @@ type DictionaryEntryAccessor(referenceKey: obj) =
     | Choice1Of2(Some(NonGeneric target)) ->
       target.[referenceKey]
     | Choice1Of2(Some(MutableGeneric(target, t) | ImmutableGeneric(target, t))) ->
-      Dictionary.Generic.get t referenceKey target
+      if Dictionary.Generic.containsKey t referenceKey target then
+        Dictionary.Generic.get t referenceKey target
+      else null
     | Choice1Of2 None -> null
     | Choice2Of2 e -> raise e
 
@@ -149,7 +151,7 @@ type DictionaryEntryAccessor(referenceKey: obj) =
       if target.Contains(referenceKey) then target.Remove(referenceKey) |> ignore
       target.Add(referenceKey, value)
     | Choice1Of2(Some (MutableGeneric(target, t))) ->
-      if Dictionary.Generic.contains t referenceKey target then
+      if Dictionary.Generic.containsKey t referenceKey target then
         Dictionary.Generic.remove t referenceKey target |> ignore
       Dictionary.Generic.add t referenceKey value target
     | Choice1Of2(Some (ImmutableGeneric _)) ->

@@ -38,8 +38,8 @@ module Dictionary =
       m.Invoke(o, [|key, value|])
       |> unbox<unit>
 
-    let contains t key o =
-      let m = (makeCollectionType t).GetMethod("Contains")
+    let containsKey (t: Type) key o =
+      let m = t.GetMethod("ContainsKey")
       m.Invoke(o, [|key|])
       |> unbox<bool>
 
