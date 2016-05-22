@@ -93,6 +93,18 @@ type PropertyAccessor(property: PropertyInfo) =
         // logger.debug("Failed to replace content of existing IDictionary", unmodifiable)
         false
 
+  let tryToReplaceDictionaryContent typ target value =
+    if target = null then false
+    else
+      try
+        Dictionary.Generic.clear typ target
+        for k in Dictionary.Generic.keys typ value do Dictionary.Generic.add typ k (Dictionary.Generic.get typ k value) target |> ignore
+        true
+      with _ ->
+        // TODO: logging
+        // logger.debug("Failed to replace content of existing IDictionary", unmodifiable)
+        false
+
   new(propertyName, typ: Type) = PropertyAccessor(typ.GetProperty(propertyName))
 
   member __.ReadMethodAttributes =
@@ -115,6 +127,12 @@ type PropertyAccessor(property: PropertyInfo) =
     if typeof<IDictionary>.IsAssignableFrom(typ) then
       tryToReplaceIDictionaryContent (this.Get(target) :?> IDictionary) (value :?> IDictionary)
       |> ignore
+    else
+      match Dictionary.Generic.cast typ with
+      | Some typ when Dictionary.Generic.isReadOnly typ target ->
+        tryToReplaceDictionaryContent typ (this.Get(target)) value
+        |> ignore
+      | _ -> ()
       
     // TODO; logging
     // logger.info("Couldn't set new value '{}' for property '{}'", value, propertyName)

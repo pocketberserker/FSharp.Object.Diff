@@ -26,7 +26,7 @@ and internal AppendableBuilderImpl(elementSelectors: ResizeArray<ElementSelector
       this :> AppendableBuilder
     member this.MapKey(key) =
       Assert.notNull "key" key
-      elementSelectors.Add(MapKeyElementSelector(key))
+      elementSelectors.Add(DictionaryKeyElementSelector(key))
       this :> AppendableBuilder
     member this.Build() =
       match List.ofSeq elementSelectors with
@@ -75,7 +75,7 @@ and [<AllowNullLiteral>] NodePath(elementSelectors: ElementSelector list) =
       | _, x :: xs when (x :? RootElementSelector) ->
         builder.Append("/") |> ignore
         loop (Some x) xs
-      | _, x :: xs when (x :? CollectionItemElementSelector) || (x :? MapKeyElementSelector) ->
+      | _, x :: xs when (x :? CollectionItemElementSelector) || (x :? DictionaryKeyElementSelector) ->
         bprintf builder "%O" x
         loop (Some x) xs
       | Some p, x :: xs when (p :? RootElementSelector) ->

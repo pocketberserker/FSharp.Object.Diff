@@ -95,7 +95,7 @@ let ``startBuilding with propertyName`` = test {
 let ``startBuilding with mapKey`` = test {
   do!
     NodePath.StartBuilding().MapKey("foo").Build().ElementSelectors
-    |> assertEquals [RootElementSelector.Instance; MapKeyElementSelector("foo")]
+    |> assertEquals [RootElementSelector.Instance; DictionaryKeyElementSelector("foo")]
 }
 
 let ``startBuilding with mapKey throws ArgumentException when key is null`` = test {

@@ -25,8 +25,7 @@ let ``Type: returns '#resultTypeName' for base of type '#baseClassName' and work
   source [
     (box <| ResizeArray(), box <| ResizeArray(), typeof<ResizeArray<obj>>)
     (box <| ResizeArray(), box [], typeof<IEnumerable>)
-    // FIXME: Map is not imeplemented System.Collections.IDictionary
-    // (box Map.empty, box <| Dictionary(), typeof<System.Collections.IDictionary>)
+    (box Map.empty<int, int>, box <| Dictionary<int, int>(), typeof<IDictionary<int, int>>)
   ]
   run (fun (base_, working, resultType) -> test {
     let instances = Instances.Of(working, base_)

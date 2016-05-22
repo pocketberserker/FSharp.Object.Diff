@@ -60,6 +60,7 @@
     <None Include="paket.references" />
     <Compile Include="StringsTest.fs" />
     <Compile Include="TypeTest.fs" />
+    <Compile Include="DictionaryTest.fs" />
     <Compile Include="Mock.fs" />
     <Compile Include="AccessorTest.fs" />
     <Compile Include="NodePathTest.fs" />
@@ -75,6 +76,7 @@
     <Compile Include="BeanDifferTest.fs" />
     <Compile Include="PrimitiveDifferTest.fs" />
     <Compile Include="CollectionDifferTest.fs" />
+    <Compile Include="DictionaryDifferTest.fs" />
     <Compile Include="StandardIntrospectorTest.fs" />
     <Compile Include="InstancesTest.fs" />
     <Compile Include="IntrospectionServiceTest.fs" />

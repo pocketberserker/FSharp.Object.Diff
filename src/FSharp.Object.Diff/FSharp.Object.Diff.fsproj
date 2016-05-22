@@ -47,6 +47,7 @@
     <Compile Include="Assert.fs" />
     <Compile Include="Classes.fs" />
     <Compile Include="Objects.fs" />
+    <Compile Include="Dictionary.fs" />
     <Compile Include="IdentityStrategy.fs" />
     <Compile Include="ElementSelector.fs" />
     <Compile Include="Accessor.fs" />

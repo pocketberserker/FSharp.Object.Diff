@@ -3,6 +3,7 @@
 open System
 open System.Collections
 open System.Collections.Generic
+open Dictionary
 
 type Accessor =
   abstract member ElementSelector: ElementSelector
@@ -113,14 +114,14 @@ type CollectionItemAccessor(referenceItem: obj, identityStrategy: IdentityStrate
     member this.Set(target, value) = this.Set(target, value)
     member this.Unset(target) = this.Unset(target)
 
-type MapEntryAccessor(referenceKey: obj) =
+type DictionaryEntryAccessor(referenceKey: obj) =
 
-  let objectToDictionary: obj -> IDictionary = function
-  | null -> null
-  | :? IDictionary as d -> d
-  | o -> raise <| ArgumentException(o.GetType().FullName)
+  let objectToDictionary: obj -> Choice<DictionaryWrapper option, ArgumentException> = function
+  | null -> Choice1Of2 None
+  | Dictionary d -> Choice1Of2(Some d)
+  | o -> Choice2Of2(ArgumentException(o.GetType().FullName))
 
-  member __.ElementSelector = MapKeyElementSelector(referenceKey) :> ElementSelector
+  member __.ElementSelector = DictionaryKeyElementSelector(referenceKey) :> ElementSelector
 
   override this.ToString() =
     "map key " + this.ElementSelector.ToString()
@@ -133,21 +134,40 @@ type MapEntryAccessor(referenceKey: obj) =
       | None -> null
 
   member __.Get(target: obj) =
-    let target = objectToDictionary target
-    if target <> null then
+    match objectToDictionary target with
+    | Choice1Of2(Some(NonGeneric target)) ->
       target.[referenceKey]
-    else null
+    | Choice1Of2(Some(MutableGeneric(target, t) | ImmutableGeneric(target, t))) ->
+      Dictionary.Generic.get t referenceKey target
+    | Choice1Of2 None -> null
+    | Choice2Of2 e -> raise e
 
   member __.Set(target: obj, value: obj) =
-    let target = objectToDictionary target
-    if target <> null then
+    match objectToDictionary target with
+    | Choice1Of2 None -> ()
+    | Choice1Of2(Some (NonGeneric target)) ->
       if target.Contains(referenceKey) then target.Remove(referenceKey) |> ignore
       target.Add(referenceKey, value)
+    | Choice1Of2(Some (MutableGeneric(target, t))) ->
+      if Dictionary.Generic.contains t referenceKey target then
+        Dictionary.Generic.remove t referenceKey target |> ignore
+      Dictionary.Generic.add t referenceKey value target
+    | Choice1Of2(Some (ImmutableGeneric _)) ->
+      target.GetType().FullName
+      |> failwithf "%s can't add and remove value."
+    | Choice2Of2 e -> raise e
 
   member __.Unset(target: obj) =
-    let target = objectToDictionary target
-    if target <> null then
+    match objectToDictionary target with
+    | Choice1Of2 None -> ()
+    | Choice1Of2(Some (NonGeneric target)) ->
       target.Remove(referenceKey) |> ignore
+    | Choice1Of2(Some (MutableGeneric(target, t))) ->
+      ()
+    | Choice1Of2(Some (ImmutableGeneric _)) ->
+      target.GetType().FullName
+      |> failwithf "%s can't remove value."
+    | Choice2Of2 e -> raise e
 
   interface Accessor with
     member this.ElementSelector = this.ElementSelector
@@ -203,28 +223,39 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
 
   abstract member Type: Type
   default this.Type =
-    let types = Type.TypesOf(working, base_, fresh)
-    let raise () =
-      types
-      |> sprintf "Detected instances of different types %A. Instances must either be null or have the exact same type."
-      |> ArgumentException
-      |> raise
+    let types = Type.TypesOf(working, base_, fresh) |> Seq.toList
     let sourceAccessorType = this.TryToGetTypeFromSourceAccessor()
-    if Type.isPrimitive sourceAccessorType then sourceAccessorType
-    elif Seq.isEmpty types then null
-    elif Seq.length types = 1 then
-      types |> Seq.head
-    elif Seq.length types > 1 then
+    match types with
+    | _ when Type.isPrimitive sourceAccessorType -> sourceAccessorType
+    | [] -> null
+    | [t] -> t
+    | _::_ ->
       if typeof<IDictionary>.AllAssignableFrom(types) then
         typeof<IDictionary>
-      elif typeof<IEnumerable>.AllAssignableFrom(types) then
-        typeof<IEnumerable>
       else
-        match Type.mostSpecificSharedType types with
-        | Some sharedType -> sharedType
-        | None when sourceAccessorType <> null -> sourceAccessorType
-        | None -> raise ()
-    else raise ()
+        let ts =
+          types
+          |> List.map Dictionary.Generic.cast
+          |> List.reduce (fun acc t ->
+            match (acc, t) with
+            | Some acc, Some t ->
+              if acc.IsAssignableFrom(t) then Some acc
+              elif t.IsAssignableFrom(acc) then Some t
+              else None
+            | _ -> None)
+        match ts with
+        | Some t -> t
+        | _ when typeof<IEnumerable>.AllAssignableFrom(types) ->
+          typeof<IEnumerable>
+        | _ ->
+          match Type.mostSpecificSharedType types with
+          | Some sharedType -> sharedType
+          | None when sourceAccessorType <> null -> sourceAccessorType
+          | None ->
+            types
+            |> sprintf "Detected instances of different types %A. Instances must either be null or have the exact same type."
+            |> ArgumentException
+            |> raise
 
   member this.IsPrimitiveType = this.Type <> null && this.Type.IsPrimitive
 

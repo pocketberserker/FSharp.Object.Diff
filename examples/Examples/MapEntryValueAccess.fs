@@ -17,7 +17,7 @@ let run () =
   mapNode.VisitChildren({ new NodeVisitor with
     member __.Node(node, visit) =
       match node.ElementSelector with
-      | :? MapKeyElementSelector as selector ->
+      | :? DictionaryKeyElementSelector as selector ->
         node.CanonicalGet(working)
         |> printfn "%A => %A" selector.Key
       | _ -> ()

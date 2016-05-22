@@ -4,6 +4,7 @@ open System
 open System.Collections
 open System.Collections.Generic
 open System.Threading
+open Dictionary
 
 [<AllowNullLiteral>]
 type Differ =
@@ -308,75 +309,105 @@ type CollectionDiffer(
     member this.Compare(parentNode, instances) = this.Compare(parentNode, instances)
 
 [<Sealed>]
-type MapDiffer(differDispatcher: DifferDispatcher, comparisonStrategyResolver: ComparisonStrategyResolver) =
+type DictionaryDiffer(differDispatcher: DifferDispatcher, comparisonStrategyResolver: ComparisonStrategyResolver) =
 
-  let findAddedKeys(instances: Instances) =
-    let source = instances.TryGetWorking<IDictionary>()
-    let filter = instances.TryGetBase<IDictionary>()
+  let findKeys source filter =
+    let source =
+      match source with
+      | Dictionary d -> Some d
+      | _ -> None
+    let filter =
+      match filter with
+      | Dictionary d -> Some d
+      | _ -> None
     let xs = ResizeArray()
-    source |> Option.iter (fun s -> for k in s.Keys do xs.Add(k))
-    filter |> Option.iter (fun s -> for k in s.Keys do xs.Remove(k) |> ignore)
+    source
+    |> Option.iter (function
+    | NonGeneric s -> for k in s.Keys do xs.Add(k)
+    | MutableGeneric(o, t) | ImmutableGeneric(o, t) ->
+      for k in Dictionary.Generic.keys t o do xs.Add(k)
+    )
+    filter
+    |> Option.iter (function
+    | NonGeneric s -> for k in s.Keys do xs.Remove(k) |> ignore
+    | MutableGeneric(o, t) | ImmutableGeneric(o, t) ->
+      for k in Dictionary.Generic.keys t o do xs.Remove(k) |> ignore
+    )
     xs :> obj seq
 
-  let findRemovedKeys(instances: Instances) =
-    let source = instances.TryGetBase<IDictionary>()
-    let filter = instances.TryGetWorking<IDictionary>()
-    let xs = ResizeArray()
-    source |> Option.iter (fun s -> for k in s.Keys do xs.Add(k))
-    filter |> Option.iter (fun s -> for k in s.Keys do xs.Remove(k) |> ignore)
-    xs :> obj seq
+  let findAddedKeys (instances: Instances) = findKeys instances.Working instances.Base
+
+  let findRemovedKeys (instances: Instances) = findKeys instances.Base instances.Working
 
   let findKnownKeys(instances: Instances) =
-    match instances.TryGetBase<IDictionary>() with
-    | Some v ->
+    match instances.Base with
+    | Dictionary(NonGeneric d) -> d.Keys :> IEnumerable |> Some
+    | Dictionary(MutableGeneric(o, t) | ImmutableGeneric(o, t)) -> Dictionary.Generic.keys t o |> Some
+    | _ -> None
+    |> function
+    | Some keys ->
       let xs = ResizeArray()
-      for k in v.Keys do
+      for k in keys do
         if not <| xs.Contains(k) then xs.Add(k)
       xs
       |> Seq.filter (fun x -> not (findAddedKeys instances |> Seq.exists ((=) x) || findRemovedKeys instances |> Seq.exists ((=) x)))
     | None -> Seq.empty
     
-  let compareEntries (mapNode: DiffNode) mapInstances keys =
+  let compareEntries (dictNode: DiffNode) dictInstances keys =
     for key in keys do
-      differDispatcher.Dispatch(mapNode, mapInstances, MapEntryAccessor(key)) |> ignore
+      differDispatcher.Dispatch(dictNode, dictInstances, DictionaryEntryAccessor(key)) |> ignore
 
   member __.Compare(parentNode, instances: Instances) =
-    let mapNode = DiffNode(parentNode, instances.SourceAccessor, instances.Type)
+    let dictNode = DiffNode(parentNode, instances.SourceAccessor, instances.Type)
     if instances.HasBeenAdded then
-      match instances.TryGetWorking<IDictionary>() with
-      | Some v ->
+      match instances.Working with
+      | Dictionary(NonGeneric v) ->
         let xs = ResizeArray()
         for k in v.Keys do xs.Add(k)
         xs :> obj seq
-      | None -> Seq.empty
-      |> compareEntries mapNode instances
-      mapNode.State <- Added
+      | Dictionary(MutableGeneric(v, t) | ImmutableGeneric(v, t)) ->
+        let xs = ResizeArray()
+        for k in Dictionary.Generic.keys t v do xs.Add(k)
+        xs :> obj seq
+      | _ -> Seq.empty
+      |> compareEntries dictNode instances
+      dictNode.State <- Added
     elif instances.HasBeenRemoved then
-      match instances.TryGetBase<IDictionary>() with
-      | Some v ->
+      match instances.Base with
+      | Dictionary(NonGeneric v) ->
         let xs = ResizeArray()
         for k in v.Keys do xs.Add(k)
         xs :> obj seq
-      | None -> Seq.empty
-      |> compareEntries mapNode instances
-      mapNode.State <- Removed
+      | Dictionary(MutableGeneric(v, t) | ImmutableGeneric(v, t)) ->
+        let xs = ResizeArray()
+        for k in Dictionary.Generic.keys t v do xs.Add(k)
+        xs :> obj seq
+      | _ -> Seq.empty
+      |> compareEntries dictNode instances
+      dictNode.State <- Removed
     elif instances.AreSame then
-      mapNode.State <- Untouched
-    elif comparisonStrategyResolver.ResolveComparisonStrategy(mapNode) <> null then
-      comparisonStrategyResolver.ResolveComparisonStrategy(mapNode)
+      dictNode.State <- Untouched
+    elif comparisonStrategyResolver.ResolveComparisonStrategy(dictNode) <> null then
+      comparisonStrategyResolver.ResolveComparisonStrategy(dictNode)
         .Compare(
-          mapNode,
+          dictNode,
           instances.Type,
-          (match instances.TryGetWorking<IDictionary>() with | Some v -> v | None -> null),
-          match instances.TryGetBase<IDictionary>() with | Some v -> v | None -> null)
+          (match instances.Working with | Dictionary(NonGeneric v) -> box v | Dictionary((ImmutableGeneric(v, _)) | (MutableGeneric(v, _))) -> v | _ -> null),
+          match instances.Base with | Dictionary(NonGeneric v) -> box v | Dictionary((ImmutableGeneric(v, _)) | (MutableGeneric(v, _))) -> v | _ -> null
+        )
     else
-      findAddedKeys instances |> compareEntries mapNode instances
-      findRemovedKeys instances |> compareEntries mapNode instances
-      findKnownKeys instances |> compareEntries mapNode instances
-    mapNode
+      findAddedKeys instances |> compareEntries dictNode instances
+      findRemovedKeys instances |> compareEntries dictNode instances
+      findKnownKeys instances |> compareEntries dictNode instances
+    dictNode
 
   member __.Accepts(typ: Type)  =
-    if typ <> null then typeof<IDictionary>.IsAssignableFrom(typ)
+    if typ <> null then
+      if typeof<IDictionary>.IsAssignableFrom(typ) then true
+      else
+        match Dictionary.Generic.cast typ with
+        | Some _ -> true
+        | None -> false
     else false
   
   interface Differ with

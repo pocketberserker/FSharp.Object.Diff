@@ -603,7 +603,7 @@ and ObjectDifferBuilder() as this =
     CollectionDiffer(differDispatcher, comparisonService, identityService)
 
   let newMapDiffer differDispatcher =
-    MapDiffer(differDispatcher, comparisonService)
+    DictionaryDiffer(differDispatcher, comparisonService)
 
   let createCustomDiffers differDispatcher =
     let differs = ResizeArray<Differ>()

@@ -59,7 +59,7 @@ type CollectionItemElementSelector(item: obj, identityStrategy: IdentityStrategy
   override __.GetHashCode() = 31
 
 [<Sealed>]
-type MapKeyElementSelector(key: obj) =
+type DictionaryKeyElementSelector(key: obj) =
   inherit ElementSelector()
 
   member __.Key = key
@@ -70,7 +70,7 @@ type MapKeyElementSelector(key: obj) =
   override this.Equals(other) =
     match other with
     | null -> false
-    | :? MapKeyElementSelector as other ->
+    | :? DictionaryKeyElementSelector as other ->
       if obj.ReferenceEquals(this, other) then true
       else
         if key <> null then key = other.Key

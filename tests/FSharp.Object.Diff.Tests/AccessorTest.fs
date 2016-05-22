@@ -89,17 +89,17 @@ module CollectionItemAccessorTest =
     do! assertEquals (CollectionItemElementSelector(referenceItem) :> ElementSelector) accessor.ElementSelector
   }
 
-module MapEntryAccessorTest =
+module DictionaryEntryAccessorTest =
 
-  let accessor = MapEntryAccessor("b")
+  let accessor = DictionaryEntryAccessor("b")
   let key1 = { Id = "key"; Value = "1" }
   let key2 = { Id = "key"; Value = "2" }
 
   let ``provide access to its path element`` = test {
-    do! assertPred (accessor.ElementSelector :? MapKeyElementSelector)
+    do! assertPred (accessor.ElementSelector :? DictionaryKeyElementSelector)
   }
 
-  let ``provide write access to referenced value in any map`` = test {
+  let ``provide write access to referenced value in any dictionary`` = test {
     let dict = Dictionary<obj, obj>()
     accessor.Set(dict, "foo")
     do! assertEquals (box "foo") (dict.["b"])
@@ -107,13 +107,18 @@ module MapEntryAccessorTest =
     do! assertEquals (box "bar") (dict.["b"])
   }
 
-  let ``provide read access to referenced value in any map`` = test {
-    let dict = Dictionary<obj, obj>()
-    dict.Add("b", "foo")
-    do! assertEquals (box "foo") (accessor.Get(dict))
+  let ``provide read access to referenced value in any dictionary`` = parameterize {
+    source [
+      box <| Dictionary<string, string>(dict [("b", "foo")])
+      dict [("b", "foo")] |> box
+      Map.ofList [("b", "foo")] |> box
+    ]
+    run (fun d -> test {
+      do! assertEquals (box "foo") (accessor.Get(d))
+    })
   }
 
-  let ``throw exception when trying to read from non map object`` = test {
+  let ``throw exception when trying to read from non dictionary object`` = test {
     let! e = trap { it (accessor.Get(obj())) }
     do! assertEquals typeof<ArgumentException> (e.GetType())
   }
@@ -122,23 +127,23 @@ module MapEntryAccessorTest =
     do! assertEquals null (accessor.Get(null))
   }
 
-  let ``remove referenced entry from any map`` = test {
+  let ``remove referenced entry from any dictionary`` = test {
     let dict = Dictionary<obj, obj>()
     dict.Add("b", "foo")
     accessor.Unset(dict)
     do! assertPred (Seq.isEmpty dict)
   }
 
-  let ``return the key object of the given map`` = parameterize {
+  let ``return the key object of the given dictionary`` = parameterize {
     source [
       (key1, key2)
       (key1, key1)
     ]
-    run (fun (referenceKey, actualMapKey) -> test {
-      let accessor = MapEntryAccessor(referenceKey)
+    run (fun (referenceKey, actualDictKey) -> test {
+      let accessor = DictionaryEntryAccessor(referenceKey)
       let dict = Dictionary<obj, obj>()
-      dict.Add(actualMapKey, "foo")
-      do! assertEquals (box actualMapKey) (accessor.GetKey(dict))
+      dict.Add(actualDictKey, "foo")
+      do! assertEquals (box actualDictKey) (accessor.GetKey(dict))
     })
   }
 
