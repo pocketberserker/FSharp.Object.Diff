@@ -11,6 +11,7 @@ type DictionaryWrapper =
 
 module Dictionary =
 
+  [<RequireQualifiedAccess>]
   module IDictionary =
 
     let get (t: Type) key o =

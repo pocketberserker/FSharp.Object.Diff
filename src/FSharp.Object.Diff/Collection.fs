@@ -12,6 +12,7 @@ type CollectionWrapper =
 
 module Collection =
 
+  [<RequireQualifiedAccess>]
   module ICollection =
 
     let private collection = typedefof<ICollection<_>>
@@ -57,6 +58,7 @@ module Collection =
         else None
       else None
 
+  [<RequireQualifiedAccess>]
   module IList =
 
     let private iList = typedefof<IList<_>>
@@ -79,6 +81,7 @@ module Collection =
       let p = (makeIListType t).GetProperty("Item")
       p.GetValue(o, [|index|])
 
+  [<RequireQualifiedAccess>]
   module FSharpList =
 
     let private fsharpList = typedefof<_ list>
