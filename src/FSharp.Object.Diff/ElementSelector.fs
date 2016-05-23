@@ -34,17 +34,20 @@ type BeanPropertyElementSelector(propertyName: string) =
     | _ -> false
   override __.GetHashCode() = hash propertyName
 
-type CollectionItemElementSelector(item: obj, identityStrategy: IdentityStrategy) =
+type CollectionItemElementSelector(item: obj, index: int option, identityStrategy: IdentityStrategy) =
   inherit ElementSelector()
 
-  new (item) = CollectionItemElementSelector(item, EqualsIdentityStrategy)
+  new (item) = CollectionItemElementSelector(item, None, EqualsIdentityStrategy)
 
   member internal __.Item = item
+  member internal __.Index = index
 
-  member __.WithIdentityStrategy(identityStrategy) = CollectionItemElementSelector(item, identityStrategy)
+  member __.WithIdentityStrategy(identityStrategy) = CollectionItemElementSelector(item, index, identityStrategy)
 
   override __.HumanReadableString =
-    "[" + String.toSingleLineString item + "]"
+    match index with
+    | Some index -> "[" + string index + "]"
+    | None -> "[" + String.toSingleLineString item + "(not index)]"
 
   override this.Equals(other) =
     match other with
@@ -52,8 +55,11 @@ type CollectionItemElementSelector(item: obj, identityStrategy: IdentityStrategy
     | :? CollectionItemElementSelector as other ->
       if obj.ReferenceEquals(this, other) then true
       else
-        if item <> null then identityStrategy.Equals(item, other.Item)
-        else other.Item = null
+        match item, index with
+        | null, None -> other.Item = null && other.Index = None
+        | null, Some _ -> other.Item = null && other.Index = index
+        | _, None -> identityStrategy.Equals(item, other.Item) && other.Index = None
+        | _, Some _ -> identityStrategy.Equals(item, other.Item) && other.Index = index
     | _ -> false
 
   override __.GetHashCode() = 31
