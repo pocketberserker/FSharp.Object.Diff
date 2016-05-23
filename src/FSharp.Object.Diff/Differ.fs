@@ -260,17 +260,25 @@ type CollectionDiffer(
       else ()
     items.GetEnumerator() |> inner 0
 
-  let getOrEmpty (xs: IEnumerable option) =
-    match xs with
-    | Some xs ->
+  let getOrEmpty (o: obj) =
+    match o with
+    | IsCollection(NonGenericCollection xs) ->
+      Some(xs :> IEnumerable)
+    | IsCollection(MutableGenericCollection(xs, _) | ImmutableGenericCollection(xs, _) | FSharpList(xs, _)) ->
+      Some(xs :?> IEnumerable)
+    | _ -> None
+    |> Option.map (fun xs ->
       let cs = ResizeArray()
       for x in xs do cs.Add(x)
       cs :> obj seq
+    )
+    |> function
+    | Some v -> v
     | None -> Seq.empty
 
   let compareInternally (collectionNode: DiffNode) (collectionInstances: Instances) identityStrategy =
-    let working = collectionInstances.TryGetWorking<IEnumerable>() |> getOrEmpty
-    let base_ = collectionInstances.TryGetBase<IEnumerable>() |> getOrEmpty
+    let working = collectionInstances.Working |> getOrEmpty
+    let base_ = collectionInstances.Base |> getOrEmpty
 
     let added = ResizeArray(working)
     let removed = ResizeArray(base_)
@@ -306,11 +314,11 @@ type CollectionDiffer(
     if identityStrategy <> null then
       collectionNode.ChildIdentityStrategy <- identityStrategy
     if instances.HasBeenAdded then
-      let addedItems = instances.TryGetWorking<IEnumerable>() |> getOrEmpty
+      let addedItems = instances.Working |> getOrEmpty
       compareItems collectionNode instances addedItems identityStrategy
       collectionNode.State <- Added
     elif instances.HasBeenRemoved then
-      let removedItems = instances.TryGetBase<IEnumerable>() |> getOrEmpty
+      let removedItems = instances.Base |> getOrEmpty
       compareItems collectionNode instances removedItems identityStrategy
       collectionNode.State <- Removed
     elif instances.AreSame then
