@@ -4,7 +4,6 @@ open System.Collections.Generic
 open Persimmon
 open UseTestNameByReflection
 open FSharp.Object.Diff
-open Dictionary
 
 let ``get dictionary wrapper`` = parameterize {
   source [
@@ -24,7 +23,7 @@ let ``get dictionary wrapper`` = parameterize {
   run (fun (o, expected) -> test {
     do!
       match o with
-      | Dictionary o ->
+      | IsDictionary o ->
         assertEquals expected o
       | _ -> o.GetType().FullName |> sprintf "%s is not dictionary" |> fail
   })

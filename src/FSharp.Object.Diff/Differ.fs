@@ -4,8 +4,6 @@ open System
 open System.Collections
 open System.Collections.Generic
 open System.Threading
-open Collection
-open Dictionary
 
 [<AllowNullLiteral>]
 type Differ =
@@ -230,13 +228,13 @@ type CollectionDiffer(
       collectionInstances.Type,
       (
         match collectionInstances.Working with
-        | Collection(NonGenericCollection v) -> box v
-        | Collection(ImmutableGenericCollection(v, _) | MutableGenericCollection(v, _) | FSharpList(v, _)) -> v
+        | IsCollection(NonGenericCollection v) -> box v
+        | IsCollection(ImmutableGenericCollection(v, _) | MutableGenericCollection(v, _) | FSharpList(v, _)) -> v
         | _ -> null
       ),
       match collectionInstances.Base with
-      | Collection(NonGenericCollection v) -> box v
-      | Collection(ImmutableGenericCollection(v, _) | MutableGenericCollection(v, _) | FSharpList(v, _)) -> v
+      | IsCollection(NonGenericCollection v) -> box v
+      | IsCollection(ImmutableGenericCollection(v, _) | MutableGenericCollection(v, _) | FSharpList(v, _)) -> v
       | _ -> null
     )
 
@@ -336,11 +334,11 @@ type DictionaryDiffer(differDispatcher: DifferDispatcher, comparisonStrategyReso
   let findKeys source filter =
     let source =
       match source with
-      | Dictionary d -> Some d
+      | IsDictionary d -> Some d
       | _ -> None
     let filter =
       match filter with
-      | Dictionary d -> Some d
+      | IsDictionary d -> Some d
       | _ -> None
     let xs = ResizeArray()
     source
@@ -363,8 +361,8 @@ type DictionaryDiffer(differDispatcher: DifferDispatcher, comparisonStrategyReso
 
   let findKnownKeys(instances: Instances) =
     match instances.Base with
-    | Dictionary(NonGenericDictionary d) -> d.Keys :> IEnumerable |> Some
-    | Dictionary(MutableGenericDictionary(o, t) | ImmutableGenericDictionary(o, t)) -> Dictionary.IDictionary.keys t o |> Some
+    | IsDictionary(NonGenericDictionary d) -> d.Keys :> IEnumerable |> Some
+    | IsDictionary(MutableGenericDictionary(o, t) | ImmutableGenericDictionary(o, t)) -> Dictionary.IDictionary.keys t o |> Some
     | _ -> None
     |> function
     | Some keys ->
@@ -383,11 +381,11 @@ type DictionaryDiffer(differDispatcher: DifferDispatcher, comparisonStrategyReso
     let dictNode = DiffNode(parentNode, instances.SourceAccessor, instances.Type)
     if instances.HasBeenAdded then
       match instances.Working with
-      | Dictionary(NonGenericDictionary v) ->
+      | IsDictionary(NonGenericDictionary v) ->
         let xs = ResizeArray()
         for k in v.Keys do xs.Add(k)
         xs :> obj seq
-      | Dictionary(MutableGenericDictionary(v, t) | ImmutableGenericDictionary(v, t)) ->
+      | IsDictionary(MutableGenericDictionary(v, t) | ImmutableGenericDictionary(v, t)) ->
         let xs = ResizeArray()
         for k in Dictionary.IDictionary.keys t v do xs.Add(k)
         xs :> obj seq
@@ -396,11 +394,11 @@ type DictionaryDiffer(differDispatcher: DifferDispatcher, comparisonStrategyReso
       dictNode.State <- Added
     elif instances.HasBeenRemoved then
       match instances.Base with
-      | Dictionary(NonGenericDictionary v) ->
+      | IsDictionary(NonGenericDictionary v) ->
         let xs = ResizeArray()
         for k in v.Keys do xs.Add(k)
         xs :> obj seq
-      | Dictionary(MutableGenericDictionary(v, t) | ImmutableGenericDictionary(v, t)) ->
+      | IsDictionary(MutableGenericDictionary(v, t) | ImmutableGenericDictionary(v, t)) ->
         let xs = ResizeArray()
         for k in Dictionary.IDictionary.keys t v do xs.Add(k)
         xs :> obj seq
@@ -416,13 +414,13 @@ type DictionaryDiffer(differDispatcher: DifferDispatcher, comparisonStrategyReso
           instances.Type,
           (
             match instances.Working with
-            | Dictionary(NonGenericDictionary v) -> box v
-            | Dictionary(ImmutableGenericDictionary(v, _) | MutableGenericDictionary(v, _)) ->
+            | IsDictionary(NonGenericDictionary v) -> box v
+            | IsDictionary(ImmutableGenericDictionary(v, _) | MutableGenericDictionary(v, _)) ->
             v | _ -> null
           ),
           match instances.Base with
-          | Dictionary(NonGenericDictionary v) -> box v
-          | Dictionary(ImmutableGenericDictionary(v, _) | MutableGenericDictionary(v, _)) -> v
+          | IsDictionary(NonGenericDictionary v) -> box v
+          | IsDictionary(ImmutableGenericDictionary(v, _) | MutableGenericDictionary(v, _)) -> v
           | _ -> null
         )
     else

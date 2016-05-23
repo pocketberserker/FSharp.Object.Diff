@@ -78,7 +78,12 @@ module Dictionary =
         else None
       | _ -> None)
 
-  let (|Dictionary|_|) (o: obj) =
+[<AutoOpen>]
+module DictionarySyntax =
+
+  open Dictionary
+
+  let (|IsDictionary|_|) (o: obj) =
     match o with
     | null -> None
     | :? IDictionary as o -> Some(NonGenericDictionary o)

@@ -116,7 +116,12 @@ module Collection =
         else None
       | _ -> None)
 
-  let (|Collection|_|) (o: obj) =
+[<AutoOpen>]
+module CollectionSyntax =
+
+  open Collection
+
+  let (|IsCollection|_|) (o: obj) =
     match o with
     | null -> None
     | :? IList as o -> Some(NonGenericCollection o)

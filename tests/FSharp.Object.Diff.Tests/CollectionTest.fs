@@ -4,7 +4,6 @@ open System.Collections.Generic
 open Persimmon
 open UseTestNameByReflection
 open FSharp.Object.Diff
-open Collection
 
 let ``get collection wrapper`` = parameterize {
   source [
@@ -24,7 +23,7 @@ let ``get collection wrapper`` = parameterize {
   run (fun (o, expected) -> test {
     do!
       match o with
-      | Collection o ->
+      | IsCollection o ->
         assertEquals expected o
       | _ -> o.GetType().FullName |> sprintf "%s is not collection" |> fail
   })

@@ -3,8 +3,6 @@
 open System
 open System.Collections
 open System.Collections.Generic
-open Collection
-open Dictionary
 
 type Accessor =
   abstract member ElementSelector: ElementSelector
@@ -39,7 +37,7 @@ type CollectionItemAccessor(referenceItem: obj, index: int option, identityStrat
 
   let objectAsCollection: obj -> Choice<CollectionWrapper option, ArgumentException> = function
   | null -> Choice1Of2 None
-  | Collection c -> Choice1Of2(Some c)
+  | IsCollection c -> Choice1Of2(Some c)
   | o -> Choice2Of2(ArgumentException(o.GetType().FullName))
 
   let remove (xs: IList) =
@@ -137,7 +135,7 @@ type DictionaryEntryAccessor(referenceKey: obj) =
 
   let objectToDictionary: obj -> Choice<DictionaryWrapper option, ArgumentException> = function
   | null -> Choice1Of2 None
-  | Dictionary d -> Choice1Of2(Some d)
+  | IsDictionary d -> Choice1Of2(Some d)
   | o -> Choice2Of2(ArgumentException(o.GetType().FullName))
 
   member __.ElementSelector = DictionaryKeyElementSelector(referenceKey) :> ElementSelector
