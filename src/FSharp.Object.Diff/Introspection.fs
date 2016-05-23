@@ -97,8 +97,8 @@ type PropertyAccessor(property: PropertyInfo) =
     if target = null then false
     else
       try
-        Dictionary.Generic.clear typ target
-        for k in Dictionary.Generic.keys typ value do Dictionary.Generic.add typ k (Dictionary.Generic.get typ k value) target |> ignore
+        Dictionary.IDictionary.clear typ target
+        for k in Dictionary.IDictionary.keys typ value do Dictionary.IDictionary.add typ k (Dictionary.IDictionary.get typ k value) target |> ignore
         true
       with _ ->
         // TODO: logging
@@ -128,8 +128,8 @@ type PropertyAccessor(property: PropertyInfo) =
       tryToReplaceIDictionaryContent (this.Get(target) :?> IDictionary) (value :?> IDictionary)
       |> ignore
     else
-      match Dictionary.Generic.cast typ with
-      | Some typ when Dictionary.Generic.isReadOnly typ target ->
+      match Dictionary.IDictionary.cast typ with
+      | Some typ when Dictionary.IDictionary.isReadOnly typ target ->
         tryToReplaceDictionaryContent typ (this.Get(target)) value
         |> ignore
       | _ -> ()

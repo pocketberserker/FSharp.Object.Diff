@@ -56,18 +56,16 @@ let setup (f: MockTarget -> MockTarget) =
       )
     ])
   {
-    Instances = Instances(RootAccessor, Seq.empty<string>, Seq.empty<string>, Seq.empty<string>)
+    Instances = Instances(RootAccessor, ([]: string list), ([]: string list), ([]: string list))
     Differ = differ
   }
 
 let ``accepts all collection types`` = parameterize {
   source [
-    typeof<System.Collections.IEnumerable>
     typeof<Set<string>>
     typeof<ResizeArray<string>>
     typeof<string []>
     typeof<int list>
-    typeof<int seq>
   ]
   run (fun t -> test {
     let target = setup id
@@ -89,7 +87,7 @@ let ``returns added node when instance has been added`` = test {
           target.IdentityStrategyResolver.SetupMethod(fun x -> <@ x.ResolveIdentityStrategy @>).Returns(EqualsIdentityStrategy)
       }
   )
-  let instances = Instances(RootAccessor, seq [0], null, null)
+  let instances = Instances(RootAccessor, [0], null, null)
   do! assertEquals Added (target.Differ.Compare(DiffNode.Root, instances).State)
 }
 
@@ -101,7 +99,7 @@ let ``returns removed node when instance has been removed`` = test {
           target.IdentityStrategyResolver.SetupMethod(fun x -> <@ x.ResolveIdentityStrategy @>).Returns(EqualsIdentityStrategy)
       }
   )
-  let instances = Instances(RootAccessor, null, seq [0], null)
+  let instances = Instances(RootAccessor, null, [0], null)
   do! assertEquals Removed (target.Differ.Compare(DiffNode.Root, instances).State)
 }
 

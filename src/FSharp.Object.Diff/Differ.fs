@@ -4,6 +4,7 @@ open System
 open System.Collections
 open System.Collections.Generic
 open System.Threading
+open Collection
 open Dictionary
 
 [<AllowNullLiteral>]
@@ -227,9 +228,17 @@ type CollectionDiffer(
     comparisonStrategy.Compare(
       collectionNode,
       collectionInstances.Type,
-      (match collectionInstances.TryGetWorking<IEnumerable>() with | Some v -> v | None -> null),
-      (match collectionInstances.TryGetBase<IEnumerable>() with | Some v -> v | None -> null)
-      )
+      (
+        match collectionInstances.Working with
+        | Collection(NonGenericCollection v) -> box v
+        | Collection(ImmutableGenericCollection(v, _) | MutableGenericCollection(v, _) | FSharpList(v, _)) -> v
+        | _ -> null
+      ),
+      match collectionInstances.Base with
+      | Collection(NonGenericCollection v) -> box v
+      | Collection(ImmutableGenericCollection(v, _) | MutableGenericCollection(v, _) | FSharpList(v, _)) -> v
+      | _ -> null
+    )
 
   let contains (haystack: IEnumerable) needle (identityStrategy: IdentityStrategy) =
     let rec inner (e: IEnumerator) =
@@ -278,7 +287,16 @@ type CollectionDiffer(
     DiffNode(parentNode, collectionInstances.SourceAccessor, collectionInstances.Type)
 
   member __.Accepts(typ: Type) =
-    typeof<IEnumerable>.IsAssignableFrom(typ)
+    if typ <> null then
+      if typeof<IList>.IsAssignableFrom(typ) then true
+      else
+        match Collection.ICollection.cast typ with
+        | Some _ -> true
+        | None ->
+          match Collection.FSharpList.cast typ with
+          | Some  _ -> true
+          | None -> false
+    else false
 
   member this.Compare(parentNode, instances) =
     let collectionNode = newNode parentNode instances
@@ -323,15 +341,15 @@ type DictionaryDiffer(differDispatcher: DifferDispatcher, comparisonStrategyReso
     let xs = ResizeArray()
     source
     |> Option.iter (function
-    | NonGeneric s -> for k in s.Keys do xs.Add(k)
-    | MutableGeneric(o, t) | ImmutableGeneric(o, t) ->
-      for k in Dictionary.Generic.keys t o do xs.Add(k)
+    | NonGenericDictionary s -> for k in s.Keys do xs.Add(k)
+    | MutableGenericDictionary(o, t) | ImmutableGenericDictionary(o, t) ->
+      for k in Dictionary.IDictionary.keys t o do xs.Add(k)
     )
     filter
     |> Option.iter (function
-    | NonGeneric s -> for k in s.Keys do xs.Remove(k) |> ignore
-    | MutableGeneric(o, t) | ImmutableGeneric(o, t) ->
-      for k in Dictionary.Generic.keys t o do xs.Remove(k) |> ignore
+    | NonGenericDictionary s -> for k in s.Keys do xs.Remove(k) |> ignore
+    | MutableGenericDictionary(o, t) | ImmutableGenericDictionary(o, t) ->
+      for k in Dictionary.IDictionary.keys t o do xs.Remove(k) |> ignore
     )
     xs :> obj seq
 
@@ -341,8 +359,8 @@ type DictionaryDiffer(differDispatcher: DifferDispatcher, comparisonStrategyReso
 
   let findKnownKeys(instances: Instances) =
     match instances.Base with
-    | Dictionary(NonGeneric d) -> d.Keys :> IEnumerable |> Some
-    | Dictionary(MutableGeneric(o, t) | ImmutableGeneric(o, t)) -> Dictionary.Generic.keys t o |> Some
+    | Dictionary(NonGenericDictionary d) -> d.Keys :> IEnumerable |> Some
+    | Dictionary(MutableGenericDictionary(o, t) | ImmutableGenericDictionary(o, t)) -> Dictionary.IDictionary.keys t o |> Some
     | _ -> None
     |> function
     | Some keys ->
@@ -361,26 +379,26 @@ type DictionaryDiffer(differDispatcher: DifferDispatcher, comparisonStrategyReso
     let dictNode = DiffNode(parentNode, instances.SourceAccessor, instances.Type)
     if instances.HasBeenAdded then
       match instances.Working with
-      | Dictionary(NonGeneric v) ->
+      | Dictionary(NonGenericDictionary v) ->
         let xs = ResizeArray()
         for k in v.Keys do xs.Add(k)
         xs :> obj seq
-      | Dictionary(MutableGeneric(v, t) | ImmutableGeneric(v, t)) ->
+      | Dictionary(MutableGenericDictionary(v, t) | ImmutableGenericDictionary(v, t)) ->
         let xs = ResizeArray()
-        for k in Dictionary.Generic.keys t v do xs.Add(k)
+        for k in Dictionary.IDictionary.keys t v do xs.Add(k)
         xs :> obj seq
       | _ -> Seq.empty
       |> compareEntries dictNode instances
       dictNode.State <- Added
     elif instances.HasBeenRemoved then
       match instances.Base with
-      | Dictionary(NonGeneric v) ->
+      | Dictionary(NonGenericDictionary v) ->
         let xs = ResizeArray()
         for k in v.Keys do xs.Add(k)
         xs :> obj seq
-      | Dictionary(MutableGeneric(v, t) | ImmutableGeneric(v, t)) ->
+      | Dictionary(MutableGenericDictionary(v, t) | ImmutableGenericDictionary(v, t)) ->
         let xs = ResizeArray()
-        for k in Dictionary.Generic.keys t v do xs.Add(k)
+        for k in Dictionary.IDictionary.keys t v do xs.Add(k)
         xs :> obj seq
       | _ -> Seq.empty
       |> compareEntries dictNode instances
@@ -392,8 +410,16 @@ type DictionaryDiffer(differDispatcher: DifferDispatcher, comparisonStrategyReso
         .Compare(
           dictNode,
           instances.Type,
-          (match instances.Working with | Dictionary(NonGeneric v) -> box v | Dictionary((ImmutableGeneric(v, _)) | (MutableGeneric(v, _))) -> v | _ -> null),
-          match instances.Base with | Dictionary(NonGeneric v) -> box v | Dictionary((ImmutableGeneric(v, _)) | (MutableGeneric(v, _))) -> v | _ -> null
+          (
+            match instances.Working with
+            | Dictionary(NonGenericDictionary v) -> box v
+            | Dictionary(ImmutableGenericDictionary(v, _) | MutableGenericDictionary(v, _)) ->
+            v | _ -> null
+          ),
+          match instances.Base with
+          | Dictionary(NonGenericDictionary v) -> box v
+          | Dictionary(ImmutableGenericDictionary(v, _) | MutableGenericDictionary(v, _)) -> v
+          | _ -> null
         )
     else
       findAddedKeys instances |> compareEntries dictNode instances
@@ -405,7 +431,7 @@ type DictionaryDiffer(differDispatcher: DifferDispatcher, comparisonStrategyReso
     if typ <> null then
       if typeof<IDictionary>.IsAssignableFrom(typ) then true
       else
-        match Dictionary.Generic.cast typ with
+        match Dictionary.IDictionary.cast typ with
         | Some _ -> true
         | None -> false
     else false

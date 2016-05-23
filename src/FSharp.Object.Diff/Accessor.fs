@@ -3,6 +3,7 @@
 open System
 open System.Collections
 open System.Collections.Generic
+open Collection
 open Dictionary
 
 type Accessor =
@@ -36,11 +37,10 @@ type PropertyAwareAccessor =
 
 type CollectionItemAccessor(referenceItem: obj, identityStrategy: IdentityStrategy) =
 
-  let objectAsCollection: obj -> Choice<IList option, IEnumerable, ArgumentException> = function
-  | null -> Choice1Of3 None
-  | :? IList as l -> Choice1Of3(Some l)
-  | :? IEnumerable as e -> Choice2Of3 e
-  | o -> Choice3Of3(ArgumentException(o.GetType().FullName))
+  let objectAsCollection: obj -> Choice<CollectionWrapper option, ArgumentException> = function
+  | null -> Choice1Of2 None
+  | Collection c -> Choice1Of2(Some c)
+  | o -> Choice2Of2(ArgumentException(o.GetType().FullName))
 
   let remove (xs: IList) =
     let rec inner index =
@@ -49,6 +49,16 @@ type CollectionItemAccessor(referenceItem: obj, identityStrategy: IdentityStrate
         let x = xs.[index]
         if x <> null && identityStrategy.Equals(x, referenceItem) then
           xs.Remove(x) |> ignore
+        else inner (index + 1)
+    inner 0
+
+  let removeGeneric (t: Type) (xs: obj) =
+    let rec inner index =
+      if index >= Collection.ICollection.count t xs then ()
+      else
+        let x = Collection.IList.item t index xs
+        if x <> null && identityStrategy.Equals(x, referenceItem) then
+          Collection.ICollection.remove t x xs |> ignore
         else inner (index + 1)
     inner 0
 
@@ -69,10 +79,11 @@ type CollectionItemAccessor(referenceItem: obj, identityStrategy: IdentityStrate
       else None
         
     match objectAsCollection target with
-    | Choice1Of3 None -> Choice1Of2 None
-    | Choice1Of3(Some cs) -> cs.GetEnumerator() |> inner |> Choice1Of2
-    | Choice2Of3 e -> e.GetEnumerator() |> inner |> Choice1Of2
-    | Choice3Of3 e -> Choice2Of2 e
+    | Choice1Of2 None -> Choice1Of2 None
+    | Choice1Of2(Some(NonGenericCollection cs)) -> cs.GetEnumerator() |> inner |> Choice1Of2
+    | Choice1Of2(Some(MutableGenericCollection(cs, _) | ImmutableGenericCollection(cs, _) | FSharpList(cs, _))) ->
+      (cs :?> IEnumerable).GetEnumerator() |> inner |> Choice1Of2
+    | Choice2Of2 e -> Choice2Of2 e
 
   member this.Get(target: obj) =
     match this.TryGet(target) with
@@ -82,25 +93,31 @@ type CollectionItemAccessor(referenceItem: obj, identityStrategy: IdentityStrate
 
   member __.Unset(target: obj) =
     match objectAsCollection target with
-    | Choice1Of3 None -> ()
-    | Choice1Of3(Some targetCollection) ->
-      remove targetCollection
-    | Choice2Of3 _ ->
+    | Choice1Of2 None -> ()
+    | Choice1Of2(Some(NonGenericCollection target)) ->
+      remove target
+    | Choice1Of2(Some(MutableGenericCollection(target, t))) when Collection.IList.cast (target.GetType()) |> Option.isSome ->
+      removeGeneric t target
+    | Choice1Of2(Some _) ->
       target.GetType().FullName
       |> failwithf "%s can't remove value."
-    | Choice3Of3 e -> raise e
+    | Choice2Of2 e -> raise e
 
   member this.Set(target: obj, value: obj) =
     match objectAsCollection target with
-    | Choice1Of3 None -> ()
-    | Choice1Of3(Some targetCollection) ->
+    | Choice1Of2 None -> ()
+    | Choice1Of2(Some(NonGenericCollection targetCollection)) ->
       let previous = this.Get(target)
       if previous <> null then this.Unset(target)
       targetCollection.Add(value) |> ignore
-    | Choice2Of3 _ ->
+    | Choice1Of2(Some(MutableGenericCollection(targetCollection, t))) ->
+      let previous = this.Get(target)
+      if previous <> null then this.Unset(target)
+      Collection.ICollection.add t value targetCollection
+    | Choice1Of2 _ ->
       target.GetType().FullName
       |> failwithf "%s can't add and remove value."
-    | Choice3Of3 e -> raise e
+    | Choice2Of2 e -> raise e
 
   override this.ToString() =
     "collection item " + this.ElementSelector.ToString()
@@ -135,11 +152,11 @@ type DictionaryEntryAccessor(referenceKey: obj) =
 
   member __.Get(target: obj) =
     match objectToDictionary target with
-    | Choice1Of2(Some(NonGeneric target)) ->
+    | Choice1Of2(Some(NonGenericDictionary target)) ->
       target.[referenceKey]
-    | Choice1Of2(Some(MutableGeneric(target, t) | ImmutableGeneric(target, t))) ->
-      if Dictionary.Generic.containsKey t referenceKey target then
-        Dictionary.Generic.get t referenceKey target
+    | Choice1Of2(Some(MutableGenericDictionary(target, t) | ImmutableGenericDictionary(target, t))) ->
+      if Dictionary.IDictionary.containsKey t referenceKey target then
+        Dictionary.IDictionary.get t referenceKey target
       else null
     | Choice1Of2 None -> null
     | Choice2Of2 e -> raise e
@@ -147,14 +164,14 @@ type DictionaryEntryAccessor(referenceKey: obj) =
   member __.Set(target: obj, value: obj) =
     match objectToDictionary target with
     | Choice1Of2 None -> ()
-    | Choice1Of2(Some (NonGeneric target)) ->
+    | Choice1Of2(Some (NonGenericDictionary target)) ->
       if target.Contains(referenceKey) then target.Remove(referenceKey) |> ignore
       target.Add(referenceKey, value)
-    | Choice1Of2(Some (MutableGeneric(target, t))) ->
-      if Dictionary.Generic.containsKey t referenceKey target then
-        Dictionary.Generic.remove t referenceKey target |> ignore
-      Dictionary.Generic.add t referenceKey value target
-    | Choice1Of2(Some (ImmutableGeneric _)) ->
+    | Choice1Of2(Some (MutableGenericDictionary(target, t))) ->
+      if Dictionary.IDictionary.containsKey t referenceKey target then
+        Dictionary.IDictionary.remove t referenceKey target |> ignore
+      Dictionary.IDictionary.add t referenceKey value target
+    | Choice1Of2(Some (ImmutableGenericDictionary _)) ->
       target.GetType().FullName
       |> failwithf "%s can't add and remove value."
     | Choice2Of2 e -> raise e
@@ -162,11 +179,11 @@ type DictionaryEntryAccessor(referenceKey: obj) =
   member __.Unset(target: obj) =
     match objectToDictionary target with
     | Choice1Of2 None -> ()
-    | Choice1Of2(Some (NonGeneric target)) ->
+    | Choice1Of2(Some (NonGenericDictionary target)) ->
       target.Remove(referenceKey) |> ignore
-    | Choice1Of2(Some (MutableGeneric(target, t))) ->
-      ()
-    | Choice1Of2(Some (ImmutableGeneric _)) ->
+    | Choice1Of2(Some (MutableGenericDictionary(target, t))) ->
+      Dictionary.IDictionary.remove t referenceKey target |> ignore
+    | Choice1Of2(Some (ImmutableGenericDictionary _)) ->
       target.GetType().FullName
       |> failwithf "%s can't remove value."
     | Choice2Of2 e -> raise e
@@ -235,18 +252,9 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
       if typeof<IDictionary>.AllAssignableFrom(types) then
         typeof<IDictionary>
       else
-        let ts =
-          types
-          |> List.map Dictionary.Generic.cast
-          |> List.reduce (fun acc t ->
-            match (acc, t) with
-            | Some acc, Some t ->
-              if acc.IsAssignableFrom(t) then Some acc
-              elif t.IsAssignableFrom(acc) then Some t
-              else None
-            | _ -> None)
-        match ts with
-        | Some t -> t
+        match Dictionary.tryFindAllAssignable types, Collection.tryFindAllAssignable types with
+        | Some t, _ -> t
+        | _, Some t -> t
         | _ when typeof<IEnumerable>.AllAssignableFrom(types) ->
           typeof<IEnumerable>
         | _ ->

@@ -60,6 +60,7 @@
     <None Include="paket.references" />
     <Compile Include="StringsTest.fs" />
     <Compile Include="TypeTest.fs" />
+    <Compile Include="CollectionTest.fs" />
     <Compile Include="DictionaryTest.fs" />
     <Compile Include="Mock.fs" />
     <Compile Include="AccessorTest.fs" />

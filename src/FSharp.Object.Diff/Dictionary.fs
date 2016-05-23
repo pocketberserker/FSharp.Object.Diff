@@ -5,13 +5,13 @@ open System.Collections
 open System.Collections.Generic
 
 type DictionaryWrapper =
-  | NonGeneric of IDictionary
-  | MutableGeneric of obj * Type
-  | ImmutableGeneric of obj * Type
+  | NonGenericDictionary of IDictionary
+  | MutableGenericDictionary of obj * Type
+  | ImmutableGenericDictionary of obj * Type
 
 module Dictionary =
 
-  module Generic =
+  module IDictionary =
 
     let get (t: Type) key o =
       let p = t.GetProperty("Item")
@@ -66,13 +66,25 @@ module Dictionary =
         else None
       else None
 
+
+  let tryFindAllAssignable xs =
+    xs 
+    |> Seq.map IDictionary.cast
+    |> Seq.reduce (fun acc t ->
+      match (acc, t) with
+      | Some acc, Some t ->
+        if acc.IsAssignableFrom(t) then Some acc
+        elif t.IsAssignableFrom(acc) then Some t
+        else None
+      | _ -> None)
+
   let (|Dictionary|_|) (o: obj) =
     match o with
     | null -> None
-    | :? IDictionary as o -> Some(NonGeneric o)
+    | :? IDictionary as o -> Some(NonGenericDictionary o)
     | _ ->
-      match o.GetType() |> Generic.cast with
+      match o.GetType() |> IDictionary.cast with
       | Some t ->
-        if Generic.isReadOnly t o then Some (ImmutableGeneric(o, t))
-        else Some(MutableGeneric(o, t))
+        if IDictionary.isReadOnly t o then Some (ImmutableGenericDictionary(o, t))
+        else Some(MutableGenericDictionary(o, t))
       | None -> None

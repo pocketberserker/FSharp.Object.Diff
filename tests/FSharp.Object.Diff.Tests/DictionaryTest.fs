@@ -10,15 +10,15 @@ let ``get dictionary wrapper`` = parameterize {
   source [
     (
       let v = Dictionary<int, string>(dict [(0, "a")])
-      (box v, NonGeneric(v))
+      (box v, NonGenericDictionary(v))
     )
     (
       let v = dict [(0, "a")]
-      (box v, ImmutableGeneric(v, typeof<IDictionary<int, string>>))
+      (box v, ImmutableGenericDictionary(v, typeof<IDictionary<int, string>>))
     )
     (
       let v = Map.empty |> Map.add 0 "a"
-      (box v, ImmutableGeneric(v, typeof<IDictionary<int, string>>))
+      (box v, ImmutableGenericDictionary(v, typeof<IDictionary<int, string>>))
     )
   ]
   run (fun (o, expected) -> test {
@@ -30,7 +30,7 @@ let ``get dictionary wrapper`` = parameterize {
   })
 }
 
-module Generic =
+module IDictionary =
 
   let ``accepts all dictionary types`` = parameterize {
     source [
@@ -38,7 +38,7 @@ module Generic =
       typeof<Map<int, int>>
     ]
     run (fun t -> test {
-      do! assertEquals (Some typeof<IDictionary<int, int>>) (Dictionary.Generic.cast t)
+      do! assertEquals (Some typeof<IDictionary<int, int>>) (Dictionary.IDictionary.cast t)
     })
   }
 
@@ -48,7 +48,7 @@ module Generic =
       Map.empty |> Map.add 0 1 |> box
     ]
     run (fun o -> test {
-      do! assertEquals (box 1) (Dictionary.Generic.get typeof<IDictionary<int, int>> 0 o)
+      do! assertEquals (box 1) (Dictionary.IDictionary.get typeof<IDictionary<int, int>> 0 o)
     })
   }
 
@@ -58,6 +58,6 @@ module Generic =
       Map.empty |> Map.add 0 1 |> box
     ]
     run (fun o -> test {
-      do! assertPred (Dictionary.Generic.containsKey typeof<IDictionary<int, int>> 0 o)
+      do! assertPred (Dictionary.IDictionary.containsKey typeof<IDictionary<int, int>> 0 o)
     })
   }
