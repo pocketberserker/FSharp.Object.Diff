@@ -1,3 +1,6 @@
+### 0.4.0 - May 24 2016
+- reimplement collection differ and collection accessor
+
 ### 0.3.1 - May 23 2016
 - fix type check(string is not simple type)
 
