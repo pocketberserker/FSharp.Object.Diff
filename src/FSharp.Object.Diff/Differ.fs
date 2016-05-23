@@ -246,19 +246,17 @@ type CollectionDiffer(
       else false
     inner (haystack.GetEnumerator())
 
-  let remove (from: ResizeArray<obj>) these identityStrategy =
-    from.RemoveAll(fun item -> contains these item identityStrategy)
+  let remove (from: ResizeArray<int * obj>) these identityStrategy =
+    from.RemoveAll(fun (_, item) -> contains these item identityStrategy)
     |> ignore
 
-  let compareItems (collectionNode: DiffNode) (collectionInstances: Instances) (items: IEnumerable) identityStrategy =
-    let rec inner index (e: IEnumerator) =
-      if e.MoveNext() then
-        let itemAccessor = CollectionItemAccessor(e.Current, Some index, identityStrategy)
-        differDispatcher.Dispatch(collectionNode, collectionInstances, itemAccessor)
-        |> ignore
-        inner (index + 1) e
-      else ()
-    items.GetEnumerator() |> inner 0
+  let compareItems (collectionNode: DiffNode) (collectionInstances: Instances) (items: (int * obj) seq) identityStrategy =
+    items
+    |> Seq.iter (fun (index, o) ->
+      let itemAccessor = CollectionItemAccessor(o, Some index, identityStrategy)
+      differDispatcher.Dispatch(collectionNode, collectionInstances, itemAccessor)
+      |> ignore
+    )
 
   let getOrEmpty (o: obj) =
     match o with
@@ -273,7 +271,7 @@ type CollectionDiffer(
       cs :> obj seq
     )
     |> function
-    | Some v -> v
+    | Some v -> v |> Seq.mapi (fun i o -> (i, o))
     | None -> Seq.empty
 
   let compareInternally (collectionNode: DiffNode) (collectionInstances: Instances) identityStrategy =

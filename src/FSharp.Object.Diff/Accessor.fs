@@ -65,7 +65,7 @@ type CollectionItemAccessor(referenceItem: obj, index: int option, identityStrat
   member __.Index = index
 
   member __.ElementSelector =
-    let selector = CollectionItemElementSelector(referenceItem)
+    let selector = CollectionItemElementSelector(referenceItem, index)
     if identityStrategy = null then selector else selector.WithIdentityStrategy(identityStrategy)
     :> ElementSelector
 

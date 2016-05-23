@@ -38,6 +38,7 @@ type CollectionItemElementSelector(item: obj, index: int option, identityStrateg
   inherit ElementSelector()
 
   new (item) = CollectionItemElementSelector(item, None, EqualsIdentityStrategy)
+  new (item, index) = CollectionItemElementSelector(item, index, EqualsIdentityStrategy)
 
   member internal __.Item = item
   member internal __.Index = index
