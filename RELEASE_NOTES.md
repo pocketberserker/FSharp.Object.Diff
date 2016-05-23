@@ -1,3 +1,6 @@
+### 0.5.1 - May 24 2016
+- reverts commit fe9e711fca53bed5157e976e061f8683bdaf2be0
+
 ### 0.5.0 - May 24 2016
 - show collection index in NodePath
 
