@@ -1,3 +1,6 @@
+### 0.5.0 - May 24 2016
+- show collection index in NodePath
+
 ### 0.4.0 - May 24 2016
 - reimplement collection differ and collection accessor
 
