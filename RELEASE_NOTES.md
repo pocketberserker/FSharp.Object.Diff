@@ -1,3 +1,7 @@
+### 0.5.2 - May 24 2016
+- fix collection type check
+- fix copy index
+
 ### 0.5.1 - May 24 2016
 - reverts commit fe9e711fca53bed5157e976e061f8683bdaf2be0
 

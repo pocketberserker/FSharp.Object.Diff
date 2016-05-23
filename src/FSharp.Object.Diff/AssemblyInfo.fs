@@ -8,11 +8,11 @@ open System.Runtime.InteropServices
 [<assembly: GuidAttribute("aac4b74e-0af4-459a-ba59-2a5788e3675b")>]
 [<assembly: AssemblyDescriptionAttribute("")>]
 [<assembly: InternalsVisibleToAttribute("FSharp.Object.Diff.Tests")>]
-[<assembly: AssemblyVersionAttribute("0.5.1")>]
-[<assembly: AssemblyFileVersionAttribute("0.5.1")>]
-[<assembly: AssemblyInformationalVersionAttribute("0.5.1")>]
+[<assembly: AssemblyVersionAttribute("0.5.2")>]
+[<assembly: AssemblyFileVersionAttribute("0.5.2")>]
+[<assembly: AssemblyInformationalVersionAttribute("0.5.2")>]
 do ()
 
 module internal AssemblyVersionInformation =
-    let [<Literal>] Version = "0.5.1"
-    let [<Literal>] InformationalVersion = "0.5.1"
+    let [<Literal>] Version = "0.5.2"
+    let [<Literal>] InformationalVersion = "0.5.2"
