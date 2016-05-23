@@ -40,12 +40,12 @@ with
   override this.ToString() = sprintf "ObjectWithString[%s]" this.Value
 
 type ObjectWithCircularReference = {
-  Id: int
+  Id: string
   Reference: ObjectWithCircularReference option
 }
 with
   override this.ToString() =
-    sprintf "ObjectWithCircularReference{Id='%d'}" this.Id
+    sprintf "ObjectWithCircularReference{Id='%s'}" this.Id
 
 [<AttributeUsage(AttributeTargets.Property, AllowMultiple = false); AllowNullLiteral>]
 type ObjectDiffTestAttribute() = inherit Attribute()
