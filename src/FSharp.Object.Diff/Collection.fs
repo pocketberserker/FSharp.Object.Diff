@@ -118,6 +118,12 @@ module Collection =
         elif t.IsAssignableFrom(acc) then Some t
         else None
       | _ -> None)
+    |> function
+    | Some v -> Some v
+    | None ->
+      xs
+      |> Seq.map FSharpList.cast
+      |> Seq.reduce (fun acc t -> if acc = t then acc else None)
 
 [<AutoOpen>]
 module CollectionSyntax =
