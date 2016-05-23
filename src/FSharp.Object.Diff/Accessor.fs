@@ -35,7 +35,7 @@ type PropertyAwareAccessor =
   abstract member PropertyAttributes: Attribute seq
   abstract member GetPropertyAttribute<'T when 'T :> Attribute and 'T : null> : unit -> 'T
 
-type CollectionItemAccessor(referenceItem: obj, identityStrategy: IdentityStrategy) =
+type CollectionItemAccessor(referenceItem: obj, index: int option, identityStrategy: IdentityStrategy) =
 
   let objectAsCollection: obj -> Choice<CollectionWrapper option, ArgumentException> = function
   | null -> Choice1Of2 None
@@ -62,7 +62,9 @@ type CollectionItemAccessor(referenceItem: obj, identityStrategy: IdentityStrate
         else inner (index + 1)
     inner 0
 
-  new(referenceItem) = CollectionItemAccessor(referenceItem, EqualsIdentityStrategy :> IdentityStrategy)
+  new(referenceItem) = CollectionItemAccessor(referenceItem, None, EqualsIdentityStrategy :> IdentityStrategy)
+
+  member __.Index = index
 
   member __.ElementSelector =
     let selector = CollectionItemElementSelector(referenceItem)

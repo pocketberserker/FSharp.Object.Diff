@@ -252,11 +252,15 @@ type CollectionDiffer(
     from.RemoveAll(fun item -> contains these item identityStrategy)
     |> ignore
 
-  let compareItems (collectionNode: DiffNode) (collectionInstances: Instances) items identityStrategy =
-    for item in items do
-      let itemAccessor = CollectionItemAccessor(item, identityStrategy)
-      differDispatcher.Dispatch(collectionNode, collectionInstances, itemAccessor)
-      |> ignore
+  let compareItems (collectionNode: DiffNode) (collectionInstances: Instances) (items: IEnumerable) identityStrategy =
+    let rec inner index (e: IEnumerator) =
+      if e.MoveNext() then
+        let itemAccessor = CollectionItemAccessor(e.Current, Some index, identityStrategy)
+        differDispatcher.Dispatch(collectionNode, collectionInstances, itemAccessor)
+        |> ignore
+        inner (index + 1) e
+      else ()
+    items.GetEnumerator() |> inner 0
 
   let getOrEmpty (xs: IEnumerable option) =
     match xs with
