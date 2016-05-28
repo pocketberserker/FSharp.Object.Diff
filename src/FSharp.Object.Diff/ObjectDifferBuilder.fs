@@ -477,16 +477,21 @@ and IdentityService(objectDifferBuilder: ObjectDifferBuilder) as this =
 
   let collectionItemIdentityService = CollectionItemIdentityService(this)
 
+  member __.And() = objectDifferBuilder
+  member __.OfCollectionItems(nodePath) =
+    collectionItemIdentityService.OfCollectionItems(nodePath)
+  member __.OfCollectionItems(typ, propertyName) =
+    collectionItemIdentityService.OfCollectionItems(typ, propertyName)
+  member __. ResolveIdentityStrategy(node) =
+    collectionItemIdentityService.ResolveIdentityStrategy(node)
+
   interface IdentityConfigurer with
-    member __.And() = objectDifferBuilder
-    member __.OfCollectionItems(nodePath) =
-      collectionItemIdentityService.OfCollectionItems(nodePath)
-    member __.OfCollectionItems(typ, propertyName) =
-      collectionItemIdentityService.OfCollectionItems(typ, propertyName)
+    member this.And() = this.And()
+    member this.OfCollectionItems(nodePath) = this.OfCollectionItems(nodePath)
+    member this.OfCollectionItems(typ, propertyName) = this.OfCollectionItems(typ, propertyName)
   
   interface IdentityStrategyResolver with
-    member __. ResolveIdentityStrategy(node) =
-      collectionItemIdentityService.ResolveIdentityStrategy(node)
+    member this. ResolveIdentityStrategy(node) = this.ResolveIdentityStrategy(node)
 
 and FilteringConfigurer =
   abstract member ReturnNodesWithState: DiffNodeState * bool -> FilteringConfigurer
