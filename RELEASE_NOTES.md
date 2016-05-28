@@ -1,3 +1,6 @@
+### 0.5.3 - May 28 2016
+- fix priority of differ
+
 ### 0.5.2 - May 24 2016
 - fix collection type check
 - fix copy index
