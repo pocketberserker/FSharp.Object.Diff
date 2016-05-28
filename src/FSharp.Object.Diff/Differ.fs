@@ -35,7 +35,7 @@ type DifferProvider() =
   let differs = new ResizeArray<Differ>()
 
   member __.Push(differ) = differs.Insert(0, differ)
-  member __.PushAll(ds) = differs.AddRange(ds)
+  member __.PushAll(ds) = differs.InsertRange(0, ds)
 
   abstract member RetrieveDifferForType: Type -> Differ
   default __.RetrieveDifferForType(typ) =
