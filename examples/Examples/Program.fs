@@ -7,5 +7,6 @@ let main args =
   | [| "CustomDiffer" |] -> CustomDiffer.run ()
   | [| "EqualsOnlyValueProviderMethod" |] -> EqualsOnlyValueProviderMethod.run ()
   | [| "PhoneBook" |] -> PhoneBook.run ()
+  | [| "Ignore" |] -> Ignore.run ()
   | _ -> SimpleNode.run ()
   0
