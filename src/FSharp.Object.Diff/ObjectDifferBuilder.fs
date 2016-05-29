@@ -213,15 +213,14 @@ and InclusionService(categoryResolver: CategoryResolver, rootConfiguration: Obje
 
   let isIgnored node =
     let rec inner strictIncludeModeEnabled isExplicitlyIncluded = function
-    | Some result, _ -> result
-    | None, [] -> strictIncludeModeEnabled && not isExplicitlyIncluded
-    | None, (x: InclusionResolver)::xs ->
+    | [] -> strictIncludeModeEnabled && not isExplicitlyIncluded
+    | (x: InclusionResolver)::xs ->
       let strictIncludeModeEnabled = if x.EnablesStrictIncludeMode() then true else strictIncludeModeEnabled
       match getInclusion node x with
-      | Excluded -> inner strictIncludeModeEnabled isExplicitlyIncluded (Some true, xs)
-      | Included -> inner strictIncludeModeEnabled true (None, xs)
-      | Default -> inner strictIncludeModeEnabled isExplicitlyIncluded (None, xs)
-    inner false false (None, List.ofSeq inclusionResolvers)
+      | Excluded -> true
+      | Included -> inner strictIncludeModeEnabled true xs
+      | Default -> inner strictIncludeModeEnabled isExplicitlyIncluded xs
+    inner false false (List.ofSeq inclusionResolvers)
 
   let newCategoryInclusionResolver () = CategoryInclusionResolver(categoryResolver)
 

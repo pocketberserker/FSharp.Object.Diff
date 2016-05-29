@@ -198,10 +198,7 @@ type TypePropertyConfigInclusionResolver() =
 
   let hasIncludedSiblings (node: DiffNode) =
     inclusions
-    |> Seq.fold (fun result (KeyValue(k, v)) ->
-      if result then result
-      else k.Type = node.ParentNode.Type && v = Included
-    ) false
+    |> Seq.exists (fun (KeyValue(k, v)) -> k.Type = node.ParentNode.Type && v = Included)
 
   member __.SetInclusion(typ, property, inclusion) =
     inclusions.Add({ Type = typ; Property = property }, inclusion)
