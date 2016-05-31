@@ -103,6 +103,7 @@ module Collection =
     let length (t: Type) o =
       let p = t.GetProperty("Length")
       p.GetValue(o, [||])
+      |> unbox<int>
 
     let item (t: Type) (index: int) o =
       let p = t.GetProperty("Item")

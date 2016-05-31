@@ -66,5 +66,5 @@ module FSharpList =
   }
 
   let ``get length`` = test {
-    do! assertEquals (box 1) (Collection.FSharpList.length typeof<int list> [0])
+    do! assertEquals 1 (Collection.FSharpList.length typeof<int list> [0])
   }

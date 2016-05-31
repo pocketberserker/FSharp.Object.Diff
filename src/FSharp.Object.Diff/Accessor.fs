@@ -80,9 +80,24 @@ type CollectionItemAccessor(referenceItem: obj, index: int option, identityStrat
         
     match objectAsCollection target with
     | Choice1Of2 None -> Choice1Of2 None
-    | Choice1Of2(Some(NonGenericCollection cs)) -> cs.GetEnumerator() |> inner |> Choice1Of2
-    | Choice1Of2(Some(MutableGenericCollection(cs, _) | ImmutableGenericCollection(cs, _) | FSharpList(cs, _))) ->
-      (cs :?> IEnumerable).GetEnumerator() |> inner |> Choice1Of2
+    | Choice1Of2(Some(NonGenericCollection cs)) ->
+      match index with
+      | Some index when index < cs.Count -> Some cs.[index]
+      | Some _ -> None
+      | _ -> cs.GetEnumerator() |> inner
+      |> Choice1Of2
+    | Choice1Of2(Some(MutableGenericCollection(cs, t) | ImmutableGenericCollection(cs, t))) ->
+      match index with
+      | Some index when index < Collection.ICollection.count t cs -> Collection.IList.item t index cs |> Some
+      | Some _ -> None
+      | _ -> (cs :?> IEnumerable).GetEnumerator() |> inner
+      |> Choice1Of2
+    | Choice1Of2(Some(FSharpList(cs, t))) ->
+      match index with
+      | Some index when index < Collection.FSharpList.length t cs -> Collection.FSharpList.item t index cs |> Some
+      | Some _ -> None
+      | _ -> (cs :?> IEnumerable).GetEnumerator() |> inner
+      |> Choice1Of2
     | Choice2Of2 e -> Choice2Of2 e
 
   member this.Get(target: obj) =
