@@ -71,11 +71,14 @@ type CollectionItemAccessor(referenceItem: obj, index: int option, identityStrat
 
   member private __.TryGet(target: obj) =
 
-    let rec inner (e: IEnumerator) =
+    let rec inner (index: int option) count (e: IEnumerator) =
       if e.MoveNext() then
         if e.Current <> null && identityStrategy.Equals(e.Current, referenceItem) then
-          Some e.Current
-        else inner e
+          match index with
+          | Some index when count = index -> Some e.Current
+          | Some _ -> inner index (count + 1) e
+          | None -> Some e.Current
+        else inner index (count + 1) e
       else None
         
     match objectAsCollection target with
@@ -84,19 +87,26 @@ type CollectionItemAccessor(referenceItem: obj, index: int option, identityStrat
       match index with
       | Some index when index < cs.Count -> Some cs.[index]
       | Some _ -> None
-      | _ -> cs.GetEnumerator() |> inner
+      | _ -> cs.GetEnumerator() |> inner None 0
       |> Choice1Of2
     | Choice1Of2(Some(MutableGenericCollection(cs, t) | ImmutableGenericCollection(cs, t))) ->
-      match index with
-      | Some index when index < Collection.ICollection.count t cs -> Collection.IList.item t index cs |> Some
-      | Some _ -> None
-      | _ -> (cs :?> IEnumerable).GetEnumerator() |> inner
-      |> Choice1Of2
+      Choice1Of2 <|
+      match Collection.IList.cast t with
+      | Some _ ->
+        match index with
+        | Some index when index < Collection.ICollection.count t cs -> Collection.IList.item t index cs |> Some
+        | Some _ -> None
+        | _ -> (cs :?> IEnumerable).GetEnumerator() |> inner None 0
+      | None ->
+        match index with
+        | Some index when index < Collection.ICollection.count t cs -> (cs :?> IEnumerable).GetEnumerator() |> inner (Some index) 0
+        | Some _ -> None
+        | _ -> (cs :?> IEnumerable).GetEnumerator() |> inner None 0
     | Choice1Of2(Some(FSharpList(cs, t))) ->
       match index with
       | Some index when index < Collection.FSharpList.length t cs -> Collection.FSharpList.item t index cs |> Some
       | Some _ -> None
-      | _ -> (cs :?> IEnumerable).GetEnumerator() |> inner
+      | _ -> (cs :?> IEnumerable).GetEnumerator() |> inner None 0
       |> Choice1Of2
     | Choice2Of2 e -> Choice2Of2 e
 

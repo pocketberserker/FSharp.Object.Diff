@@ -31,13 +31,35 @@ module CollectionItemAccessorTest =
 
   let anyReferenceItem = obj()
 
-  let ``get: should return item equal to reference item from collection`` = test {
-    let accessor = CollectionItemAccessor(ObjectWithIdentityAndValue.idOnly "1")
-    let collection = ResizeArray<obj>()
-    collection.Add({ Id = "1"; Value = "foo" })
-    let item = accessor.Get(collection) :?> ObjectWithIdentityAndValue
-    do! assertEquals "1" item.Id
-    do! assertEquals "foo" item.Value
+  let ``get: should return item equal to reference item from collection`` = parameterize {
+    source [
+      (
+        let collection = ResizeArray<obj>()
+        collection.Add({ Id = "1"; Value = "foo" })
+        box collection,
+        Some 0
+      )
+      (
+        Set.ofList [{ Id = "1"; Value = "foo" }] |> box,
+        Some 0
+      )
+      (
+        let collection = ResizeArray<obj>()
+        collection.Add({ Id = "1"; Value = "foo" })
+        box collection,
+        None
+      )
+      (
+        Set.ofList [{ Id = "1"; Value = "foo" }] |> box,
+        None
+      )
+    ]
+    run (fun (collection, index) -> test {
+      let accessor = CollectionItemAccessor(ObjectWithIdentityAndValue.idOnly "1", index, EqualsIdentityStrategy)
+      let item = accessor.Get(collection) :?> ObjectWithIdentityAndValue
+      do! assertEquals "1" item.Id
+      do! assertEquals "foo" item.Value
+    })
   }
 
   let ``get: should return null when no item in the collection matches the reference item`` = test {

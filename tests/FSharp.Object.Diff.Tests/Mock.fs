@@ -3,7 +3,7 @@
 open System
 open FSharp.Object.Diff
 
-[<CustomEquality; NoComparison>]
+[<CustomEquality; CustomComparison>]
 type ObjectWithIdentityAndValue = {
   Id: string
   Value: string
@@ -18,6 +18,19 @@ with
       | _ -> false
   override this.GetHashCode() = hash this.Id
   override this.ToString() = sprintf "ObjectWithIdentityAndValue{id='%s', value='%s'}" this.Id this.Value
+  interface IComparable with
+    member this.CompareTo(o: obj) =
+      match o with
+      | :? ObjectWithIdentityAndValue as o ->
+        if this.Id < o.Id then -1
+        elif this.Id = o.Id then 0
+        else 1
+      | _ ->
+        let this = hash this
+        let o = hash o
+        if this < o then -1
+        elif this = o then 0
+        else 1
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module ObjectWithIdentityAndValue =
