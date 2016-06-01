@@ -1,7 +1,10 @@
+### 0.6.1 - June 2 2016
+- fix get ICollection item
+
 ### 0.6.0 - June 1 2016
 - fix IdentityService API
 - fix check collection index
-^ try get indexed value
+- try get indexed value
 
 ### 0.5.3 - May 28 2016
 - fix priority of differ
