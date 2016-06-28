@@ -27,7 +27,11 @@ type PrintingVisitor(working: obj, base_: obj) =
     | _ -> propertyMessage
 
   abstract member Print: string -> unit
+#if PCL
+  default __.Print(_) = ()
+#else
   default __.Print(text) = printfn "%s" text
+#endif
 
   abstract member Filter: DiffNode -> bool
   default __.Filter(node) = filter node
@@ -37,6 +41,8 @@ type PrintingVisitor(working: obj, base_: obj) =
       if filter node then
         this.Print(differenceToString node base_ working)
 
+#if PCL
+#else
 type NodeHierarchyVisitor(maxDepth: int) =
   let calculateDepth (node: DiffNode) =
     let rec inner count = function
@@ -59,3 +65,4 @@ type NodeHierarchyVisitor(maxDepth: int) =
         else visit.DontGoDeeper()
       elif maxDepth < 0 then
         print node currentLevel
+#endif

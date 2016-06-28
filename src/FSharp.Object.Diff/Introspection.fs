@@ -1,7 +1,6 @@
 ﻿namespace FSharp.Object.Diff
 
 open System
-open System.Reflection
 open System.Collections
 
 type IsIntrospectableResolver =
@@ -62,12 +61,14 @@ type ObjectDiffPropertyAttribute() =
   member __.Categories with get () = categories and set(v) = categories <- v
   member __.EqualsOnlyValueProviderProperty with get () = equalsOnlyValueProviderProperty and set(v) = equalsOnlyValueProviderProperty <- v
 
+open System.Reflection
+
 type PropertyAccessor(property: PropertyInfo) =
 
   let propertyName = property.Name
   let typ = property.PropertyType
-  let readMethod = property.GetGetMethod()
-  let writeMethod = property.GetSetMethod()
+  let readMethod = PropertyInfo.getGetMethod property
+  let writeMethod = PropertyInfo.getSetMethod property
 
   let tryToReplaceCollectionContent (target: IList) (value: IList) =
     if target = null then false
@@ -105,11 +106,10 @@ type PropertyAccessor(property: PropertyInfo) =
         // logger.debug("Failed to replace content of existing IDictionary", unmodifiable)
         false
 
-  new(propertyName, typ: Type) = PropertyAccessor(typ.GetProperty(propertyName))
+  new(propertyName, typ: Type) = PropertyAccessor(Type.getProperty propertyName typ)
 
   member __.ReadMethodAttributes =
-    Attribute.GetCustomAttributes(property)
-    |> Array.toSeq
+    PropertyInfo.getCustomAttributes property
     |> Seq.distinct
 
   member __.Get(target: obj) =
@@ -121,10 +121,10 @@ type PropertyAccessor(property: PropertyInfo) =
         raise <| PropertyReadException(propertyName, target.GetType(), e)
 
   member private this.TryToReplaceContentOfCollectionTypes(target: obj, value: obj) =
-    if typeof<IList>.IsAssignableFrom(typ) then
+    if Type.isAssignableFrom typeof<IList> typ then
       tryToReplaceCollectionContent (this.Get(target) :?> IList) (value :?> IList)
       |> ignore
-    if typeof<IDictionary>.IsAssignableFrom(typ) then
+    if Type.isAssignableFrom typeof<IDictionary> typ then
       tryToReplaceIDictionaryContent (this.Get(target) :?> IDictionary) (value :?> IDictionary)
       |> ignore
     else
@@ -155,11 +155,11 @@ type PropertyAccessor(property: PropertyInfo) =
 
   member this.GetReadMethodAttribute<'T when 'T :> Attribute and 'T : null>() =
     this.ReadMethodAttributes
-    |> Seq.tryFind (fun a -> typeof<'T>.IsAssignableFrom(a.GetType()))
-    |> function | Some v -> v :?> 'T | None -> null
+    |> Seq.tryFind (fun a -> Type.isAssignableFrom typeof<'T> (a.GetType()))
+    |> function | Some (v: Attribute) -> v :?> 'T | None -> null
 
   member __.CategoriesFromAttribute =
-    let x = Attribute.GetCustomAttribute(property, typeof<ObjectDiffPropertyAttribute>) :?> ObjectDiffPropertyAttribute
+    let x = PropertyInfo.getCustomAttribute<ObjectDiffPropertyAttribute> property
     if x = null then Set.empty
     else Set.ofArray x.Categories
 
@@ -179,11 +179,12 @@ with
   interface Introspector with
     member __.Introspect(typ: Type) =
       Assert.notNull "typ" typ
-      let typeInfo = TypeInfo(typ)
-      typ.GetProperties()
+      let typeInfo = FSharp.Object.Diff.TypeInfo(typ)
+      typ
+      |> Type.getProperties
       |> Array.iter (fun x ->
         if x.CanRead then
-          let r = x.GetGetMethod()
+          let r = PropertyInfo.getGetMethod x
           if Array.isEmpty <| r.GetParameters() && not <| r.IsStatic then
             typeInfo.AddPropertyAccessor(PropertyAccessor(x))
       )

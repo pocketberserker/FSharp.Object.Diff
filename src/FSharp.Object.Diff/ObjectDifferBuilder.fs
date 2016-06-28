@@ -85,7 +85,7 @@ and IntrospectionService(objectDifferBuilder: ObjectDifferBuilder) =
     :> PropertyAccessExceptionHandler
 
   let isPrimitiveTypeEnumOrArray (typ: Type) =
-    Type.isPrimitive typ || typ.IsArray || typ.IsEnum
+    Type.isPrimitive typ || typ.IsArray || Type.isEnum typ
 
   member __.IntrospectorForNode(node: DiffNode) =
     match typeIntrospectorMap.TryGetValue(node.Type) with
@@ -391,9 +391,9 @@ and ComparisonService(objectDifferBuilder: ObjectDifferBuilder) =
           | Some v -> v :> ComparisonStrategy
           | None when valueType <> null ->
             let objectDiffEqualsOnlyType =
-              let xs = valueType.GetCustomAttributes(typeof<ObjectDiffEqualsOnlyAttribute>, false)
+              let xs = Type.getCustomAttributes<ObjectDiffEqualsOnlyAttribute> false valueType
               if Array.isEmpty xs then null
-              else xs.[0] :?> ObjectDiffEqualsOnlyAttribute
+              else xs.[0]
             match comparisonStrategyResolver.ComparisonStrategyForAttribute(objectDiffEqualsOnlyType) with
             | Some v -> v :> ComparisonStrategy
             | None -> null

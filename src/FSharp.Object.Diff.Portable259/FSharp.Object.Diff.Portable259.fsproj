@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>29848f25-1ba6-4d67-9dd2-486981e0a244</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>FSharp.Object.Diff</RootNamespace>
+    <AssemblyName>FSharp.Object.Diff</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Profile259</TargetFrameworkProfile>
+    <TargetProfile>netcore</TargetProfile>
+    <TargetFSharpCoreVersion>3.259.4.0</TargetFSharpCoreVersion>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Name>FSharp.Object.Diff.Portable259</Name>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <Tailcalls>false</Tailcalls>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;PCL</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <DocumentationFile>bin\Debug\FSharp.Object.Diff.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <Tailcalls>true</Tailcalls>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;PCL</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <DocumentationFile>bin\Release\FSharp.Object.Diff.XML</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="FSharp.Core">
+      <Name>FSharp.Core</Name>
+      <AssemblyName>FSharp.Core.dll</AssemblyName>
+      <HintPath>$(MSBuildExtensionsPath32)\..\Reference Assemblies\Microsoft\FSharp\.NETCore\$(TargetFSharpCoreVersion)\FSharp.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="..\FSharp.Object.Diff\Strings.fs">
+      <Link>Strings.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\Prelude.fs">
+      <Link>Prelude.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\Assert.fs">
+      <Link>Assert.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\Reflect.fs">
+      <Link>Reflect.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\Objects.fs">
+      <Link>Objects.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\Collection.fs">
+      <Link>Collection.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\Dictionary.fs">
+      <Link>Dictionary.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\IdentityStrategy.fs">
+      <Link>IdentityStrategy.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\ElementSelector.fs">
+      <Link>ElementSelector.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\Accessor.fs">
+      <Link>Accessor.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\NodePath.fs">
+      <Link>NodePath.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\TypeInfo.fs">
+      <Link>TypeInfo.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\DiffNode.fs">
+      <Link>DiffNode.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\TypePropertyIdentityStrategyResolver.fs">
+      <Link>TypePropertyIdentityStrategyResolver.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\Visitor.fs">
+      <Link>Visitor.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\Category.fs">
+      <Link>Category.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\Circular.fs">
+      <Link>Circular.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\Inclusion.fs">
+      <Link>Inclusion.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\Introspection.fs">
+      <Link>Introspection.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\Comparison.fs">
+      <Link>Comparison.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\Filtering.fs">
+      <Link>Filtering.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\Differ.fs">
+      <Link>Differ.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\ObjectDiffer.fs">
+      <Link>ObjectDiffer.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\NodeQueryService.fs">
+      <Link>NodeQueryService.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\ObjectDifferBuilder.fs">
+      <Link>ObjectDifferBuilder.fs</Link>
+    </Compile>
+    <Compile Include="..\FSharp.Object.Diff\ObjectMerger.fs">
+      <Link>ObjectMerger.fs</Link>
+    </Compile>
+  </ItemGroup>
+  <PropertyGroup>
+    <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">12</MinimumVisualStudioVersion>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.Portable.FSharp.Targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

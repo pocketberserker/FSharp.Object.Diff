@@ -45,7 +45,7 @@
     <Compile Include="Strings.fs" />
     <Compile Include="Prelude.fs" />
     <Compile Include="Assert.fs" />
-    <Compile Include="Classes.fs" />
+    <Compile Include="Reflect.fs" />
     <Compile Include="Objects.fs" />
     <Compile Include="Collection.fs" />
     <Compile Include="Dictionary.fs" />

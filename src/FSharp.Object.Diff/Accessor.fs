@@ -253,7 +253,7 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
       fresh
   member this.GetFresh(typ: Type) =
     let o = this.Fresh
-    if o <> null then Convert.ChangeType(o, typ)
+    if o <> null then Convert.ChangeType(o, typ, null)
     else null
 
   member __.TryToGetTypeFromSourceAccessor() =
@@ -292,7 +292,7 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
             |> ArgumentException
             |> raise
 
-  member this.IsPrimitiveType = this.Type <> null && this.Type.IsPrimitive
+  member this.IsPrimitiveType = Type.isPrimitive this.Type
 
   member this.HasBeenAdded =
     if working <> null && base_ = null then true

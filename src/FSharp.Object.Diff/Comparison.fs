@@ -21,7 +21,7 @@ type EqualsOnlyComparisonStrategy(propertyName: string) =
   static let access (target: obj) methodName =
     if target = null then null
     else
-      let m = target.GetType().GetProperty(methodName)
+      let m = target.GetType() |> Type.getProperty methodName
       m.GetValue(target, [||])
 
   new() = EqualsOnlyComparisonStrategy(null)
@@ -41,7 +41,7 @@ type ComparableComparisonStrategy = ComparableComparisonStrategy
 with
   interface ComparisonStrategy with
     member __.Compare(node, typ, working, base_) =
-      if typeof<IComparable>.IsAssignableFrom(typ) then
+      if Type.isAssignableFrom typeof<IComparable> typ then
         if isEqualByComparison (working :?> IComparable) (base_ :?> IComparable) then
           node.State <- Untouched
         else node.State <- Changed

@@ -10,7 +10,7 @@ type PublicNoArgsConstructorInstanceFactory = PublicNoArgsConstructorInstanceFac
 with
   member __.NewInstanceOfType(typ: Type) =
     try
-      typ.GetConstructor([||]).Invoke([||])
+      (Type.getNonArgConstructor typ).Invoke([||])
     with e ->
       raise <| TypeInitializationException(
         sprintf "Failed to create instance of type '%s'. Reason: %s" typ.FullName "Attempt to access the public no-args constructor caused an exception",

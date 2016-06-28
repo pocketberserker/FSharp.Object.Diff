@@ -22,12 +22,6 @@ let summary = ""
 // (used as a description for NuGet package; line breaks are automatically cleaned up)
 let description = ""
 
-// List of author names (for NuGet package)
-let authors = [ "pocketberserker" ]
-
-// Tags for your project (for NuGet package)
-let tags = "fsharp diff object"
-
 // File system information
 let solutionFile  = "FSharp.Object.Diff.sln"
 
@@ -62,10 +56,10 @@ let (|Fsproj|Csproj|Vbproj|) (projFileName:string) =
 
 // Generate assembly info files with the right version & up-to-date information
 Target "AssemblyInfo" (fun _ ->
+    let replace (oldValue:string) newValue (str:string) = str.Replace(oldValue, newValue)
     let getAssemblyInfoAttributes projectName =
-        [ Attribute.Title (projectName)
+        [ Attribute.Title (projectName |> replace ".Portable259" "" |> replace ".Portable7" "" |> replace ".Portable78" "")
           Attribute.Product project
-          Attribute.Guid "aac4b74e-0af4-459a-ba59-2a5788e3675b"
           Attribute.Description summary
           Attribute.InternalsVisibleTo("FSharp.Object.Diff.Tests")
           Attribute.Version release.AssemblyVersion

@@ -195,7 +195,7 @@ type BeanDiffer(
     elif isIntrospectableResolver.IsIntrospectable(beanNode) then
       compareUsingIntrospection beanNode instances
 
-  member __.Accepts(typ: Type) = (not <| typ.IsPrimitive) && (not <| typ.IsArray)
+  member __.Accepts(typ: Type) = (not <| Type.isPrimitive typ) && (not <| typ.IsArray)
 
   member __.Compare(parentNode, instances: Instances) =
     let beanNode = DiffNode(parentNode, instances.SourceAccessor, instances.Type)
@@ -296,7 +296,7 @@ type CollectionDiffer(
 
   member __.Accepts(typ: Type) =
     if typ <> null then
-      if typeof<IList>.IsAssignableFrom(typ) then true
+      if Type.isAssignableFrom typeof<IList> typ then true
       else
         match Collection.ICollection.cast typ with
         | Some _ -> true
@@ -437,7 +437,7 @@ type DictionaryDiffer(differDispatcher: DifferDispatcher, comparisonStrategyReso
 
   member __.Accepts(typ: Type)  =
     if typ <> null then
-      if typeof<IDictionary>.IsAssignableFrom(typ) then true
+      if Type.isAssignableFrom typeof<IDictionary> typ then true
       else
         match Dictionary.IDictionary.cast typ with
         | Some _ -> true
