@@ -12,7 +12,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Profile78</TargetFrameworkProfile>
     <TargetProfile>netcore</TargetProfile>
-    <TargetFSharpCoreVersion>3.78.4.0</TargetFSharpCoreVersion>
+    <TargetFSharpCoreVersion>3.78.3.1</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>FSharp.Object.Diff.Portable78</Name>
   </PropertyGroup>
