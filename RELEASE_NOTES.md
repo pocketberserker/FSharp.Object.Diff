@@ -1,3 +1,6 @@
+### 0.8.0 - June 29 2016
+- fix target FSharp.Core version
+
 ### 0.7.0 - June 29 2016
 - support PCL
 
