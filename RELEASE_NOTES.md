@@ -1,3 +1,6 @@
+### 0.7.0 - June 29 2016
+- support PCL
+
 ### 0.6.1 - June 2 2016
 - fix get ICollection item
 
