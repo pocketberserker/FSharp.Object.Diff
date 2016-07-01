@@ -135,7 +135,7 @@ let ``isPropertyAware: returns #expectedResult when acessor #doesOrDoesNotImplem
   ]
   run (fun (accessor, expectedResult) -> test {
     let node = DiffNode(null, accessor, typeof<obj>)
-    do! assertEquals expectedResult node.IsProperyAware
+    do! assertEquals expectedResult node.IsPropertyAware
   })
 }
 

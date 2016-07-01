@@ -13,7 +13,7 @@ type TypePropertyIdentityStrategyResolver() =
   let strategies = Dictionary<PropertyId, IdentityStrategy>()
 
   let isQualified (node: DiffNode) =
-    if node.IsProperyAware then
+    if node.IsPropertyAware then
       if node.ParentNode = null || node.ParentNode.Type = null then false
       elif node.PropertyName = null then false
       else true
