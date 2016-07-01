@@ -255,7 +255,7 @@ and [<AllowNullLiteral>] DiffNode(parentNode: DiffNode, accessor: Accessor, valu
     bprintf sb ", accessed via %O)" accessor
     sb.ToString()
 
-  member __.IsProperyAware = accessor :? PropertyAwareAccessor
+  member __.IsPropertyAware = accessor :? PropertyAwareAccessor
 
   member __.GetPropertyAttribute<'T when 'T :> Attribute and 'T : null>() =
     match accessor with

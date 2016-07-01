@@ -190,7 +190,7 @@ type TypePropertyConfigInclusionResolver() =
   let inclusions = Dictionary<PropertyId, Inclusion>()
 
   let isQualified (node: DiffNode) =
-    if node.IsProperyAware then
+    if node.IsPropertyAware then
       if node.ParentNode <> null && node.ParentNode.Type = null then false
       elif node.PropertyName = null then false
       else true
