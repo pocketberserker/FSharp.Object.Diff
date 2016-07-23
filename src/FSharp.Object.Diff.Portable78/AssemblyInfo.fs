@@ -2,7 +2,7 @@
 open System.Reflection
 open System.Runtime.CompilerServices
 
-[<assembly: AssemblyTitleAttribute("FSharp.Object.Diff8")>]
+[<assembly: AssemblyTitleAttribute("FSharp.Object.Diff")>]
 [<assembly: AssemblyProductAttribute("FSharp.Obejct.Diff")>]
 [<assembly: AssemblyDescriptionAttribute("")>]
 [<assembly: InternalsVisibleToAttribute("FSharp.Object.Diff.Tests")>]
