@@ -1,3 +1,7 @@
+### 0.9.0 - September 4 2016
+- fix typo [#2](https://github.com/pocketberserker/FSharp.Object.Diff/pull/2)
+- fix assembly title
+
 ### 0.8.0 - June 29 2016
 - fix target FSharp.Core version
 
