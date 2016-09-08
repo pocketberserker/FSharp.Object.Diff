@@ -58,7 +58,7 @@ and [<AllowNullLiteral>] DiffNode(parentNode: DiffNode, accessor: Accessor, valu
   member val CircleStartNode: DiffNode = null with get, set
 
   member __.AddCategories(categories) =
-    additionalCategories <- List.foldBack Set.add categories additionalCategories 
+    additionalCategories <- List.foldBack Set.add categories additionalCategories
 
   member val State = Untouched with get, set
 
@@ -241,7 +241,7 @@ and [<AllowNullLiteral>] DiffNode(parentNode: DiffNode, accessor: Accessor, valu
 
   override this.ToString() =
     let sb = StringBuilder()
-    bprintf sb "%s(state=%A" (this.GetType().Name) this.State 
+    bprintf sb "%s(state=%A" (this.GetType().Name) this.State
     if this.Type <> null then
       bprintf sb ", type=%s" this.Type.FullName
     if this.ChildCount = 1 then

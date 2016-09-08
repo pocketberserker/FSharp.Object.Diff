@@ -133,7 +133,7 @@ type PropertyAccessor(property: PropertyInfo) =
         tryToReplaceDictionaryContent typ (this.Get(target)) value
         |> ignore
       | _ -> ()
-      
+
     // TODO; logging
     // logger.info("Couldn't set new value '{}' for property '{}'", value, propertyName)
 

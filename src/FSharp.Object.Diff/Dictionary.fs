@@ -69,7 +69,7 @@ module Dictionary =
 
 
   let tryFindAllAssignable xs =
-    xs 
+    xs
     |> Seq.map IDictionary.cast
     |> Seq.reduce (fun acc t ->
       match (acc, t) with

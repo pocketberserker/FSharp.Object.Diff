@@ -44,7 +44,7 @@ type CategoryInclusionResolver(categoryResolver: CategoryResolver) =
     member __.EnablesStrictIncludeMode() = containsIncluded
 
 type ValueNode<'T when 'T : equality>(elementSelector: ElementSelector, parent: ValueNode<'T> option) =
-  
+
   let children = Dictionary<ElementSelector, ValueNode<'T>>()
 
   new() = ValueNode(RootElementSelector.Instance, None)
@@ -84,7 +84,7 @@ type ValueNode<'T when 'T : equality>(elementSelector: ElementSelector, parent: 
   member __.HasChild(childSelector) = children.ContainsKey(childSelector)
 
   member this.HasValue = Option.isSome this.Value
-  
+
   member this.ContainsValue(value) =
     if this.Value |> Option.forall ((=) value) then true
     else children.Values |> Seq.exists (fun child -> child.ContainsValue(value))

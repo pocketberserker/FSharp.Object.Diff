@@ -12,7 +12,7 @@ type private MergingDifferenceVisitor<'T>(head: 'T, modified: 'T) =
       | _ -> ()
 
 type ObjectMerger(objectDiffer: ObjectDiffer) =
-  
+
   new() = ObjectMerger(ObjectDifferBuilder.BuildDefault())
 
   member __.Merge(modified, base_, head) =

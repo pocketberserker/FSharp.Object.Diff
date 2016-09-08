@@ -130,7 +130,7 @@ type DifferDispatcher(
           circularReferenceExceptionHandler.OnCircularReferenceException(node)
           node
     if parentNode <> null then resetInstanceMemory ()
-    node 
+    node
 
   let compareWithAccessor parentNode (parentInstances: Instances) (accessor: Accessor) =
     let node = new DiffNode(parentNode, accessor, null)
@@ -240,7 +240,7 @@ type CollectionDiffer(
 
   let contains (haystack: IEnumerable) needle (identityStrategy: IdentityStrategy) =
     let rec inner (e: IEnumerator) =
-      if e.MoveNext() then 
+      if e.MoveNext() then
         if identityStrategy.Equals(needle, e.Current) then true
         else inner e
       else false
@@ -378,7 +378,7 @@ type DictionaryDiffer(differDispatcher: DifferDispatcher, comparisonStrategyReso
       xs
       |> Seq.filter (fun x -> not (findAddedKeys instances |> Seq.exists ((=) x) || findRemovedKeys instances |> Seq.exists ((=) x)))
     | None -> Seq.empty
-    
+
   let compareEntries (dictNode: DiffNode) dictInstances keys =
     for key in keys do
       differDispatcher.Dispatch(dictNode, dictInstances, DictionaryEntryAccessor(key)) |> ignore
@@ -443,7 +443,7 @@ type DictionaryDiffer(differDispatcher: DifferDispatcher, comparisonStrategyReso
         | Some _ -> true
         | None -> false
     else false
-  
+
   interface Differ with
 
     member this.Accepts(typ: Type) = this.Accepts(typ)

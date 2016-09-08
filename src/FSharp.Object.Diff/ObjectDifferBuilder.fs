@@ -55,7 +55,7 @@ and CategoryService(objectDifferBuilder: ObjectDifferBuilder) =
     member __.And() = objectDifferBuilder
     member this.OfNode(nodePath) = this.OfNode(nodePath)
     member this.OfType(typ) = this.OfType(typ)
-  
+
   interface CategoryResolver with
     member this.ResolveCategories(node) = this.ResolveCategories(node)
 
@@ -410,10 +410,10 @@ and ComparisonService(objectDifferBuilder: ObjectDifferBuilder) =
     member this.OfType(typ) =
       ComparisonConfigurerOfType(this, typ, typeComparisonStrategyMap)
       :> ComparisonConfigurerOf
-  
+
   interface ComparisonStrategyResolver with
     member this.ResolveComparisonStrategy(node) = this.ResolveComparisonStrategy(node)
-  
+
   interface PrimitiveDefaultValueModeResolver with
     member __.ResolvePrimitiveDefaultValueMode(_) = !primitiveDefaultValueMode
 
@@ -449,7 +449,7 @@ and private CollectionItemIdentityServiceOfCollectionItemsByTypeProperty(
       identityConfigure
 
 and CollectionItemIdentityService(identityConfigurer: IdentityConfigurer) =
- 
+
   let nodePathIdentityStrategies = ValueNode<IdentityStrategy>()
   let typePropertyIdentityStrategyResolver = TypePropertyIdentityStrategyResolver()
 
@@ -488,7 +488,7 @@ and IdentityService(objectDifferBuilder: ObjectDifferBuilder) as this =
     member this.And() = this.And()
     member this.OfCollectionItems(nodePath) = this.OfCollectionItems(nodePath)
     member this.OfCollectionItems(typ, propertyName) = this.OfCollectionItems(typ, propertyName)
-  
+
   interface IdentityStrategyResolver with
     member this. ResolveIdentityStrategy(node) = this.ResolveIdentityStrategy(node)
 
@@ -521,8 +521,7 @@ and ReturnableNodeService(objectDifferBuilder: ObjectDifferBuilder) =
     member this.OmitNodesWithState(state) = this.ReturnNodesWithState(state, false)
     member this.ReturnNodesWithState(state, enabled) = this.ReturnNodesWithState(state, enabled)
     member this.ReturnNodesWithState(state) = this.ReturnNodesWithState(state, true)
-    
-  
+
   interface IsReturnableResolver with
     member __.IsReturnable(node) =
       if node.IsRootNode then true
@@ -554,7 +553,7 @@ and CircularReferenceService(objectDifferBuilder: ObjectDifferBuilder) =
       circularReferenceExceptionHandler <- Some exceptionHandler
       this :> CircularReferenceConfigurer
     member __.And() = objectDifferBuilder
-  
+
   interface CircularReferenceDetectorFactory with
     member __.CreateCircularReferenceDetector() =
       match circularReferenceMatchingMode with
@@ -581,7 +580,7 @@ and DifferService(objectDifferBuilder: ObjectDifferBuilder) =
       objectDifferBuilder
 
 and ObjectDifferBuilder() as this =
-  
+
   let categoryService = CategoryService(this)
   let introspectionService = IntrospectionService(this)
   let inclusionService = InclusionService(categoryService, this)

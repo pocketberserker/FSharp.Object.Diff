@@ -110,7 +110,7 @@ module Collection =
       p.GetValue(o, [|index|])
 
   let tryFindAllAssignable xs =
-    xs 
+    xs
     |> Seq.map ICollection.cast
     |> Seq.reduce (fun acc t ->
       match (acc, t) with

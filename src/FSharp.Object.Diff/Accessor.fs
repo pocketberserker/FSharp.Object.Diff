@@ -80,7 +80,7 @@ type CollectionItemAccessor(referenceItem: obj, index: int option, identityStrat
           | None -> Some e.Current
         else inner index (count + 1) e
       else None
-        
+
     match objectAsCollection target with
     | Choice1Of2 None -> Choice1Of2 None
     | Choice1Of2(Some(NonGenericCollection cs)) ->
