@@ -498,7 +498,7 @@ and FilteringConfigurer =
   abstract member OmitNodesWithState: DiffNodeState -> FilteringConfigurer
   abstract member And: unit -> ObjectDifferBuilder
 
-and ReturnableNodeService( objectDifferBuilder: ObjectDifferBuilder) =
+and ReturnableNodeService(objectDifferBuilder: ObjectDifferBuilder) =
 
   let stateFilterSettings = Dictionary<DiffNodeState, bool>()
 
