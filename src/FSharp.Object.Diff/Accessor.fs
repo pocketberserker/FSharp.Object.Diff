@@ -221,6 +221,8 @@ type DictionaryEntryAccessor(referenceKey: obj) =
 
 type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
 
+  let mutable parent: Instances option = None
+
   static member Of(sourceAccessor: Accessor, working: 'T, base_: 'T, fresh: 'T) =
     Instances(sourceAccessor, working, base_, fresh)
 
@@ -237,9 +239,13 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
 
   member __.SourceAccessor = sourceAccessor
 
+  member __.Parent with get() = parent and private set(v) = parent <- v
+
   abstract member Access: Accessor -> Instances
-  override __.Access(accessor) =
-    Instances(accessor, accessor.Get(working), accessor.Get(base_), accessor.Get(fresh))
+  override this.Access(accessor) =
+    let child = Instances(accessor, accessor.Get(working), accessor.Get(base_), accessor.Get(fresh))
+    child.Parent <- Some this
+    child
 
   member __.Working = working
   member __.TryGetWorking<'T>() = if working <> null && working :? 'T then Some(working :?> 'T) else None

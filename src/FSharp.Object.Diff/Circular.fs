@@ -47,7 +47,7 @@ type CircularReferenceDetector(referenceMatchingMode: DetectorReferenceMatchingM
           | Some(Entry(path, _)) -> path
           | None -> null
         raise <| CircularReferenceException(path)
-      stack.Add(Entry(nodePath, instance))
+      else stack.Add(Entry(nodePath, instance))
 
   member __.Remove(instance: obj) =
     if instance = null then ()

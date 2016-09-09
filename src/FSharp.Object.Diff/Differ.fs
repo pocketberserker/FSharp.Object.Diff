@@ -195,6 +195,17 @@ type BeanDiffer(
     elif isIntrospectableResolver.IsIntrospectable(beanNode) then
       compareUsingIntrospection beanNode instances
 
+  // FIXME: This function should be O(1) but was O(n)
+  let alreadyChecked (instances: Instances) =
+    let rec inner (parent: Instances option) =
+      match parent with
+      | Some parent when parent.Base = instances.Base && parent.Working = instances.Working ->
+        if parent.SourceAccessor :? RootAccessor then false
+        else true
+      | Some parent -> inner parent.Parent
+      | None -> false
+    inner instances.Parent
+
   member __.Accepts(typ: Type) = (not <| Type.isPrimitive typ) && (not <| typ.IsArray)
 
   member __.Compare(parentNode, instances: Instances) =
@@ -207,6 +218,9 @@ type BeanDiffer(
     elif instances.HasBeenRemoved then
       compareUsingAppropriateMethod beanNode instances
       beanNode.State <- Removed
+    // avoid recursion 
+    elif alreadyChecked instances then
+      beanNode.State <- Ignored
     else compareUsingAppropriateMethod beanNode instances
     beanNode
 

@@ -60,6 +60,14 @@ with
   override this.ToString() =
     sprintf "ObjectWithCircularReference{Id='%s'}" this.Id
 
+type RecursionPropertyObject(id: string, reference: RecursionPropertyObject option) =
+
+  let mutable parent: RecursionPropertyObject option = None
+
+  member __.Id = id
+  member __.Reference = reference
+  member __.Parent with get() = parent and set(v) = parent <- v
+
 [<AttributeUsage(AttributeTargets.Property, AllowMultiple = false); AllowNullLiteral>]
 type ObjectDiffTestAttribute() = inherit Attribute()
 
