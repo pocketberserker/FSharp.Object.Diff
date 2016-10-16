@@ -1,3 +1,6 @@
+### 0.10.0-beta1 - October 16 2016
+- avoid infinite loop
+
 ### 0.9.0 - September 4 2016
 - fix typo [#2](https://github.com/pocketberserker/FSharp.Object.Diff/pull/2)
 - fix assembly title
