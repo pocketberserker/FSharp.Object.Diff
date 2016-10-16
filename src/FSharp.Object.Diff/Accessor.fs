@@ -69,7 +69,7 @@ type CollectionItemAccessor(referenceItem: obj, index: int option, identityStrat
     if identityStrategy = null then selector else selector.WithIdentityStrategy(identityStrategy)
     :> ElementSelector
 
-  member private __.TryGet(target: obj) =
+  member __.TryGet(target: obj) =
 
     let rec inner (index: int option) count (e: IEnumerator) =
       if e.MoveNext() then
