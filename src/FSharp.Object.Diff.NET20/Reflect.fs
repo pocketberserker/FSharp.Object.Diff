@@ -6,7 +6,7 @@ open System.Numerics
 open System.Text
 open System.Globalization
 open System.Reflection
-#if PCL
+#if PCL || NETSTANDARD16
 open System.Linq
 #endif
 
@@ -16,7 +16,7 @@ module Type =
   let isPrimitive (typ: Type) =
     typ <> null &&
     typ
-#if PCL
+#if PCL || NETSTANDARD16
       .GetTypeInfo()
 #endif
       .IsPrimitive
@@ -46,7 +46,7 @@ module Type =
 
   let isAssignableFrom (a: Type) (b: Type) =
     a
-#if PCL
+#if PCL || NETSTANDARD16
       .GetTypeInfo().IsAssignableFrom(b.GetTypeInfo())
 #else
       .IsAssignableFrom(b)
@@ -56,7 +56,7 @@ module Type =
 
   let private baseType (typ: Type) =
     typ
-#if PCL
+#if PCL || NETSTANDARD16
       .GetTypeInfo().BaseType
 #else
       .BaseType
@@ -96,7 +96,7 @@ module Type =
 
   let getMethod name (typ: Type) =
     typ
-#if PCL
+#if PCL || NETSTANDARD16
       .GetTypeInfo().GetDeclaredMethod(name)
 #else
       .GetMethod(name)
@@ -104,7 +104,7 @@ module Type =
 
   let getProperty name (typ: Type) =
     typ
-#if PCL
+#if PCL || NETSTANDARD16
       .GetTypeInfo().GetDeclaredProperty(name)
 #else
       .GetProperty(name)
@@ -112,7 +112,7 @@ module Type =
 
   let isGenericType (typ: Type) =
     typ
-#if PCL
+#if PCL || NETSTANDARD16
       .GetTypeInfo().IsGenericType
 #else
       .IsGenericType
@@ -120,7 +120,7 @@ module Type =
 
   let getGenericArguments (typ: Type) =
     typ
-#if PCL
+#if PCL || NETSTANDARD16
       .GetTypeInfo().GetGenericParameterConstraints()
 #else
       .GetGenericArguments()
@@ -128,7 +128,7 @@ module Type =
 
   let getProperties (typ: Type) =
     typ
-#if PCL
+#if PCL || NETSTANDARD16
       .GetTypeInfo().DeclaredProperties
     |> Seq.toArray
 #else
@@ -137,7 +137,7 @@ module Type =
 
   let getNonArgConstructor (t: Type) =
     t
-#if PCL
+#if PCL || NETSTANDARD16
       .GetTypeInfo().DeclaredConstructors
       .Where(fun x -> Array.isEmpty <| x.GetParameters())
       .FirstOrDefault()
@@ -147,7 +147,7 @@ module Type =
 
   let isEnum (t: Type) =
     t
-#if PCL
+#if PCL || NETSTANDARD16
       .GetTypeInfo().IsEnum
 #else
       .IsEnum
@@ -155,7 +155,7 @@ module Type =
 
   let getCustomAttributes<'T when 'T :> Attribute> inherit' (t: Type) =
     t
-#if PCL
+#if PCL || NETSTANDARD16
       .GetTypeInfo().GetCustomAttributes<'T>(inherit')
     |> Seq.toArray
 #else
@@ -168,7 +168,7 @@ module PropertyInfo =
 
   let getGetMethod (info: PropertyInfo) =
     info
-#if PCL
+#if PCL || NETSTANDARD16
       .GetMethod
 #else
       .GetGetMethod()
@@ -176,14 +176,14 @@ module PropertyInfo =
 
   let getSetMethod (info: PropertyInfo) =
     info
-#if PCL
+#if PCL || NETSTANDARD16
       .SetMethod
 #else
       .GetSetMethod()
 #endif
 
   let getCustomAttributes (info: PropertyInfo) =
-#if PCL
+#if PCL || NETSTANDARD16
     info.GetCustomAttributes()
 #else
     Attribute.GetCustomAttributes(info)
@@ -191,7 +191,7 @@ module PropertyInfo =
 #endif
 
   let getCustomAttribute<'T when 'T :> Attribute> (info: PropertyInfo) =
-#if PCL
+#if PCL || NETSTANDARD16
     info.GetCustomAttribute<'T>()
 #else
     Attribute.GetCustomAttribute(info, typeof<'T>) :?> 'T
@@ -217,7 +217,7 @@ type Type with
 
   member this.AllAssignableFrom(types: Type seq) =
     types |> Seq.forall (fun t ->
-#if PCL
+#if PCL || NETSTANDARD16
       this.GetTypeInfo().IsAssignableFrom(t.GetTypeInfo())
 #else
       this.IsAssignableFrom(t)

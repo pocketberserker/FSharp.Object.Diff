@@ -1,0 +1,61 @@
+{
+  "buildOptions": {
+    "debugType": "portable",
+    "compilerName": "fsc",
+    "compile": {
+      "includeFiles": [
+        "../FSharp.Object.Diff.NET20.Tests/StringsTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/TypeTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/CollectionTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/DictionaryTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/Mock.fs",
+        "../FSharp.Object.Diff.NET20.Tests/AccessorTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/NodePathTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/NodePathValueHolderTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/CategoryTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/CircularReferenceDetectorTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/EqualsIdentityStrategyTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/DiffNodeTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/DifferDispatcherTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/PrintingVisitorTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/PropertyAccessorTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/DifferProviderTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/BeanDifferTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/PrimitiveDifferTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/CollectionDifferTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/DictionaryDifferTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/StandardIntrospectorTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/InstancesTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/IntrospectionServiceTest.fs",
+        "../FSharp.Object.Diff.NET20.Tests/ComparisonServiceTest.fs"
+      ]
+    }
+  },
+  "dependencies": {
+    "FSharp.Object.Diff": {
+      "target": "project"
+    },
+    "Persimmon": "2.0.1-alpha4",
+    "Foq": "1.7.1"
+  },
+  "tools": {
+    "dotnet-compile-fsc": {
+      "version": "1.0.0-preview2-*",
+      "imports": [
+        "dnxcore50",
+        "portable-net45+win81",
+        "netstandard1.3"
+      ]
+    }
+  },
+  "frameworks": {
+    "net45": {
+      "frameworkAssemblies": {
+        "System.Web": "4.0.0.0"
+      },
+      "dependencies": {
+        "FSharp.Core": "4.0.0.1"
+      }
+    }
+  }
+}

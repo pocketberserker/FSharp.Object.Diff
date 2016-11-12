@@ -1,0 +1,79 @@
+{
+  "version": "0.10.0",
+  "name": "FSharp.Object.Diff",
+  "buildOptions": {
+    "debugType": "portable",
+    "compilerName": "fsc",
+    "compile": {
+      "includeFiles": [
+        "./AssemblyInfo.fs",
+        "../FSharp.Object.Diff.NET20/Strings.fs",
+        "../FSharp.Object.Diff.NET20/Prelude.fs",
+        "../FSharp.Object.Diff.NET20/Assert.fs",
+        "../FSharp.Object.Diff.NET20/Reflect.fs",
+        "../FSharp.Object.Diff.NET20/Objects.fs",
+        "../FSharp.Object.Diff.NET20/Collection.fs",
+        "../FSharp.Object.Diff.NET20/Dictionary.fs",
+        "../FSharp.Object.Diff.NET20/IdentityStrategy.fs",
+        "../FSharp.Object.Diff.NET20/ElementSelector.fs",
+        "../FSharp.Object.Diff.NET20/Accessor.fs",
+        "../FSharp.Object.Diff.NET20/NodePath.fs",
+        "../FSharp.Object.Diff.NET20/TypeInfo.fs",
+        "../FSharp.Object.Diff.NET20/DiffNode.fs",
+        "../FSharp.Object.Diff.NET20/TypePropertyIdentityStrategyResolver.fs",
+        "../FSharp.Object.Diff.NET20/Visitor.fs",
+        "../FSharp.Object.Diff.NET20/Category.fs",
+        "../FSharp.Object.Diff.NET20/Circular.fs",
+        "../FSharp.Object.Diff.NET20/Inclusion.fs",
+        "../FSharp.Object.Diff.NET20/Introspection.fs",
+        "../FSharp.Object.Diff.NET20/Comparison.fs",
+        "../FSharp.Object.Diff.NET20/Filtering.fs",
+        "../FSharp.Object.Diff.NET20/Differ.fs",
+        "../FSharp.Object.Diff.NET20/ObjectDiffer.fs",
+        "../FSharp.Object.Diff.NET20/NodeQueryService.fs",
+        "../FSharp.Object.Diff.NET20/ObjectDifferBuilder.fs",
+        "../FSharp.Object.Diff.NET20/ObjectMerger.fs"
+      ]
+    }
+  },
+  "tools": {
+    "dotnet-mergenupkg": "1.0.*",
+    "dotnet-compile-fsc": {
+      "version": "1.0.0-preview2-*",
+      "imports": [
+        "dnxcore50",
+        "portable-net45+win81",
+        "netstandard1.3"
+      ]
+    }
+  },
+  "frameworks": {
+    "net40": {
+      "frameworkAssemblies": {
+        "System.Numerics": ""
+      },
+      "dependencies": {
+        "FSharp.Core": "4.0.0.1"
+      }
+    },
+    "net45": {
+      "frameworkAssemblies": {
+        "System.Numerics": ""
+      },
+      "dependencies": {
+        "FSharp.Core": "4.0.0.1"
+      }
+    },
+    "netstandard1.6": {
+      "buildOptions": {
+        "define": [
+          "NETSTANDARD16"
+        ]
+      },
+      "dependencies": {
+        "NETStandard.Library": "1.6.0",
+        "FSharp.Core": "4.0.1.7-alpha"
+      }
+    }
+  }
+}
