@@ -1,3 +1,6 @@
+### 0.11.0-alpha1 - November 13 2016
+- support .NET Core
+
 ### 0.10.0 - November 13 2016
 - fix accessibility of CollectionItemAccessor#TryGet
 - avoid infinite loop
