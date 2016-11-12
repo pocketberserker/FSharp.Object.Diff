@@ -1,7 +1,5 @@
-### 0.10.0-beta2 - October 16 2016
+### 0.10.0 - November 13 2016
 - fix accessibility of CollectionItemAccessor#TryGet
-
-### 0.10.0-beta1 - October 16 2016
 - avoid infinite loop
 
 ### 0.9.0 - September 4 2016
