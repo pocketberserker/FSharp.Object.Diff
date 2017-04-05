@@ -12,14 +12,18 @@ open System.IO
 open SourceLink
 #endif
 
+let configuration = getBuildParamOrDefault "configuration" "Release"
+
 let isDotnetInstalled = DotNetCli.isInstalled()
 
 let outDir = "bin"
 
 let project = "FSharp.Obejct.Diff"
 
+let solutionFile = "FSharp.Object.Diff.sln"
+
 // Pattern specifying assemblies to be tested using NUnit
-let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
+let testAssemblies = "tests/**/bin" @@ configuration @@ "*Tests*.dll"
 
 // Git configuration (used for publishing documentation in gh-pages branch)
 // The profile where the project is posted
@@ -31,10 +35,6 @@ let gitName = "FSharp.Object.Diff"
 
 // The url for the raw files hosted
 let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/pocketberserker"
-
-// --------------------------------------------------------------------------------------
-// END TODO: The rest of the file includes standard build steps
-// --------------------------------------------------------------------------------------
 
 // Read additional information from the release notes document
 let release = LoadReleaseNotes "RELEASE_NOTES.md"
@@ -67,27 +67,30 @@ Target "AssemblyInfo" (fun _ ->
         )
 
     !! "src/**/*.??proj"
-    |> Seq.map getProjectDetails
+    |> Seq.choose (fun p ->
+      let name = Path.GetFileNameWithoutExtension(p)
+      if name.EndsWith("NETCore") || name.EndsWith("NET40") || name.EndsWith("NET45") then None
+      else getProjectDetails p |> Some
+    )
     |> Seq.iter (fun (projFileName, projectName, folderName, attributes) ->
         match projFileName with
         | Fsproj -> CreateFSharpAssemblyInfo (("src" @@ folderName) @@ "AssemblyInfo.fs") attributes
         | Csproj -> CreateCSharpAssemblyInfo ((folderName @@ "Properties") @@ "AssemblyInfo.cs") attributes
         | Vbproj -> CreateVisualBasicAssemblyInfo ((folderName @@ "My Project") @@ "AssemblyInfo.vb") attributes
-        )
+    )
 )
 
 // Copies binaries from default VS location to exepcted bin folder
 // But keeps a subdirectory structure for each project in the
 // src folder to support multiple project outputs
 Target "CopyBinaries" (fun _ ->
-    !! "src/**/*.??proj"
-    |>  Seq.map (fun f -> ((System.IO.Path.GetDirectoryName f) @@ "bin/Release", outDir @@ (System.IO.Path.GetFileNameWithoutExtension f)))
-    |>  Seq.iter (fun (fromDir, toDir) -> CopyDir toDir fromDir (fun _ -> true))
-)
-
-Target "SetVersionInProjectJSON" (fun _ ->
-  !! "src/**/project.json"
-  |> Seq.iter (DotNetCli.SetVersionInProjectJson release.NugetVersion)
+  !! "src/**/*.??proj"
+  |> Seq.filter (fun p ->
+    let p = Path.GetFileNameWithoutExtension(p)
+    not (p.EndsWith("NET40") || p.EndsWith("NET45") || p.EndsWith("NETCore"))
+  )
+  |>  Seq.map (fun f -> ((System.IO.Path.GetDirectoryName f) @@ "bin" @@ configuration, outDir @@ (System.IO.Path.GetFileNameWithoutExtension f)))
+  |>  Seq.iter (fun (fromDir, toDir) -> CopyDir toDir fromDir (fun _ -> true))
 )
 
 // --------------------------------------------------------------------------------------
@@ -95,7 +98,7 @@ Target "SetVersionInProjectJSON" (fun _ ->
 
 Target "Clean" (fun _ ->
   CleanDirs ["bin"; "temp"]
-  !! "./src/**/bin/Release"
+  !! ("./src/**/bin" @@ configuration)
   |> CleanDirs
 )
 
@@ -105,22 +108,69 @@ let isTravisCI = (environVarOrDefault "TRAVIS" "") = "true"
 // Build library & test project
 
 Target "Build" (fun _ ->
-  !! "./**/*.fsproj"
-  |> MSBuildRelease "" "Rebuild"
+  !! solutionFile
+  |> MSBuild "" "Rebuild" [ ("Configuration", configuration) ]
   |> ignore
 )
 
 Target "Build.NETCore" (fun _ ->
-  DotNetCli.Restore id
 
-  DotNetCli.Build (fun p ->
+  let args = [ sprintf "/p:Version=%s" release.NugetVersion ]
+
+  let net40Project = "src/FSharp.Object.Diff.NET40/FSharp.Object.Diff.NET40.fsproj"
+  let net45Project = "src/FSharp.Object.Diff.NET45/FSharp.Object.Diff.NET45.fsproj"
+  let netCoreProject = "src/FSharp.Object.Diff.NETCore/FSharp.Object.Diff.NETCore.fsproj"
+  let examplesProject = "examples/Examples/Examples.fsproj"
+
+  if not isTravisCI then
+
+    DotNetCli.Restore (fun p ->
+      { p with
+          Project = net40Project
+      }
+    )
+    DotNetCli.Build (fun p ->
+      { p with
+          Project = net40Project
+          Configuration = configuration
+          AdditionalArgs = args
+      }
+    )
+
+    DotNetCli.Restore (fun p ->
+      { p with
+          Project = net45Project
+      }
+    )
+    DotNetCli.Build (fun p ->
+      { p with
+          Project = net45Project
+          Configuration = configuration
+          AdditionalArgs = args
+      }
+    )
+
+  DotNetCli.Restore (fun p ->
     { p with
-        Project = "src/FSharp.Object.Diff/project.json"
+        Project = netCoreProject
     }
   )
   DotNetCli.Build (fun p ->
     { p with
-        Project = "examples/Examples/project.json"
+        Project = netCoreProject
+        Configuration = configuration
+        AdditionalArgs = args
+    }
+  )
+
+  DotNetCli.Restore (fun p ->
+    { p with
+        Project = examplesProject
+    }
+  )
+  DotNetCli.Build (fun p ->
+    { p with
+        Project = examplesProject
     }
   )
 )
@@ -133,18 +183,7 @@ Target "RunTests" (fun _ ->
 )
 
 Target "RunTests.NETCore" (fun _ ->
-//  DotNetCli.Test (fun p ->
-//    { p with
-//        Project = "tests/FSharp.Object.Diff.Tests/project.json"
-//    }
-//  )
-  DotNetCli.Build (fun p ->
-    { p with
-        Project = "tests/FSharp.Object.Diff.Tests/project.json"
-    }
-  )
-  !! "tests/FSharp.Object.Diff.Tests/bin/Release/**/*Tests*.dll"
-  |> Persimmon id
+  ()
 )
 
 #if MONO
@@ -168,83 +207,17 @@ Target "SourceLink" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 
-Target "NuGet.Pack" (fun _ ->
-
-  let packagingDir = outDir @@ "nuget" @@ "FSharp.Object.Diff"
-  [
-    "bin/FSharp.Object.Diff.NET20/FSharp.Object.Diff.dll"
-    "bin/FSharp.Object.Diff.NET20/FSharp.Object.Diff.XML"
-  ]
-  |> CopyFiles (packagingDir @@ "lib" @@ "net20")
-  [
-    "bin/FSharp.Object.Diff.Portable7/FSharp.Object.Diff.dll"
-    "bin/FSharp.Object.Diff.Portable7/FSharp.Object.Diff.XML"
-  ]
-  |> CopyFiles (packagingDir @@ "lib" @@ "portable45-net45+win8")
-  [
-    "bin/FSharp.Object.Diff.Portable78/FSharp.Object.Diff.dll"
-    "bin/FSharp.Object.Diff.Portable78/FSharp.Object.Diff.XML"
-  ]
-  |> CopyFiles (packagingDir @@ "lib" @@ "portable45-net45+win8+wp8")
-  [
-    "bin/FSharp.Object.Diff.Portable259/FSharp.Object.Diff.dll"
-    "bin/FSharp.Object.Diff.Portable259/FSharp.Object.Diff.XML"
-  ]
-  |> CopyFiles (packagingDir @@ "lib" @@ "portable45-net45+win8+wp8+wpa81")
-
-  let dependencies = [
-    ("FSharp.Core", "4.0.0.1")
-  ]
+Target "NuGet" (fun _ ->
 
   NuGet (fun p ->
     {
       p with
         OutputPath = outDir
-        WorkingDir = packagingDir
+        WorkingDir = outDir
         Version = release.NugetVersion
         ReleaseNotes = toLines release.Notes
-        DependenciesByFramework =
-          [
-            {
-              FrameworkVersion = "net20"
-              Dependencies = []
-            }
-            {
-              FrameworkVersion = ".NETPortable4.5-Profile259"
-              Dependencies = dependencies
-            }
-            {
-              FrameworkVersion = ".NETPortable4.5-Profile7"
-              Dependencies = dependencies
-            }
-            {
-              FrameworkVersion = ".NETPortable4.5-Profile78"
-              Dependencies = dependencies
-            }
-          ]
     }
-  ) "src/FSharp.Object.Diff.NET20/FSharp.Object.Diff.nuspec"
-)
-
-Target "NuGet.AddNetCore" (fun _ ->
-  if not isDotnetInstalled then failwith "You need to install .NET core to publish NuGet packages"
-
-  DotNetCli.Pack (fun p ->
-    { p with
-        Project = "src/FSharp.Object.Diff/project.json"
-    }
-  )
-
-  let nupkg = sprintf "../../bin/FSharp.Object.Diff.%s.nupkg" release.NugetVersion
-  let netcoreNupkg = sprintf "bin/Release/FSharp.Object.Diff.%s.nupkg" release.NugetVersion
-
-  let mergeNupkg framework =
-    let exitCode = Shell.Exec("dotnet", sprintf """mergenupkg --source "%s" --other "%s" --framework %s""" nupkg netcoreNupkg framework, "src/FSharp.Object.Diff/")
-    if exitCode <> 0 then failwithf "Command failed with exit code %i" exitCode
-
-  mergeNupkg "netstandard1.6"
-  mergeNupkg "net40"
-  mergeNupkg "net45"
+  ) "src/FSharp.Object.Diff.nuspec"
 )
 
 Target "PublishNuget" (fun _ ->
@@ -274,13 +247,10 @@ Target "Release" (fun _ ->
 
 Target "NETCore" DoNothing
 
-Target "NuGet" DoNothing
-
 Target "All" DoNothing
 
 "Clean"
   ==> "AssemblyInfo"
-  ==> "SetVersionInProjectJSON"
   =?> ("Build", not isTravisCI)
   =?> ("CopyBinaries", not isTravisCI)
   =?> ("RunTests", not isTravisCI)
@@ -296,8 +266,6 @@ Target "All" DoNothing
 #else
   =?> ("SourceLink", Pdbstr.tryFind().IsSome )
 #endif
-  ==> "NuGet.Pack"
-  ==> "NuGet.AddNetCore"
   ==> "NuGet"
 
 "NuGet"

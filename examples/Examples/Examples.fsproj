@@ -1,0 +1,19 @@
+﻿<Project Sdk="FSharp.NET.Sdk;Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="SimpleNode.fs" />
+    <Compile Include="MapEntryValueAccess.fs" />
+    <Compile Include="CustomDiffer.fs" />
+    <Compile Include="EqualsOnlyValueProviderMethod.fs" />
+    <Compile Include="PhoneBook.fs" />
+    <Compile Include="Ignore.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FSharp.NET.Sdk" Version="1.0.*" PrivateAssets="All" />
+    <ProjectReference Include="..\..\src\FSharp.Object.Diff.NETCore\FSharp.Object.Diff.NETCore.fsproj" />
+  </ItemGroup>
+</Project>
