@@ -9,15 +9,14 @@ open UseTestNameByReflection
 open FSharp.Object.Diff
 open Foq
 
-let ``Type: throws IllegalArgumentException if base and working have incompatible types`` = parameterize {
+let ``Type: returns obj type if base and working have different types`` = parameterize {
   source [
     (box <| StringBuilder(), box "")
     (box "foo", box 42)
   ]
   run (fun (base_, working) -> test {
     let instances = Instances(RootAccessor, working, base_, null)
-    let! ex = trap { it (instances.Type) }
-    do! assertEquals typeof<ArgumentException> (ex.GetType())
+    do! assertEquals typeof<obj> instances.Type
   })
 }
 

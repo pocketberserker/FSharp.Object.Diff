@@ -374,10 +374,10 @@ and ComparisonService(objectDifferBuilder: ObjectDifferBuilder) =
   let primitiveDefaultValueMode =  ref UnAssigned
 
   member __.ResolveComparisonStrategy(node: DiffNode) =
-    let valueType = node.Type
     match nodePathComparisonStrategies.ValueForNodePath(node.Path) with
     | Some comparisonStrategy -> comparisonStrategy
     | None ->
+      let valueType = node.Type
       match typeComparisonStrategyMap.TryGetValue(valueType) with
       | true, v -> v
       | false, _ ->
@@ -396,7 +396,9 @@ and ComparisonService(objectDifferBuilder: ObjectDifferBuilder) =
               else xs.[0]
             match comparisonStrategyResolver.ComparisonStrategyForAttribute(objectDiffEqualsOnlyType) with
             | Some v -> v :> ComparisonStrategy
+            | None when valueType = typeof<obj> -> equalsOnlyComparisonStrategy :> ComparisonStrategy
             | None -> null
+          | None when valueType = typeof<obj> -> equalsOnlyComparisonStrategy :> ComparisonStrategy
           | None -> null
 
   interface ComparisonConfigurer with

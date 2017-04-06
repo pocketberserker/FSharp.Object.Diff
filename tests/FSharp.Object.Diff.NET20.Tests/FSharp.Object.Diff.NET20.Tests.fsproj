@@ -84,6 +84,7 @@
     <Compile Include="InstancesTest.fs" />
     <Compile Include="IntrospectionServiceTest.fs" />
     <Compile Include="ComparisonServiceTest.fs" />
+    <Compile Include="ObjectDifferTest.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

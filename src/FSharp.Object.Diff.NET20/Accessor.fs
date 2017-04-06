@@ -292,11 +292,7 @@ type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
           match Type.mostSpecificSharedType types with
           | Some sharedType -> sharedType
           | None when sourceAccessorType <> null -> sourceAccessorType
-          | None ->
-            types
-            |> sprintf "Detected instances of different types %A. Instances must either be null or have the exact same type."
-            |> ArgumentException
-            |> raise
+          | None -> typeof<obj>
 
   member this.IsPrimitiveType = Type.isPrimitive this.Type
 
