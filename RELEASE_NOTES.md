@@ -1,5 +1,6 @@
-### 0.11.0-alpha1 - November 13 2016
+### 1.0.0 - April 7 2017
 - support .NET Core
+- return obj type when instances have different types
 
 ### 0.10.0 - November 13 2016
 - fix accessibility of CollectionItemAccessor#TryGet

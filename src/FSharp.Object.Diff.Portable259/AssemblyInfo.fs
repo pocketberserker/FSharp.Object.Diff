@@ -6,15 +6,15 @@ open System.Runtime.CompilerServices
 [<assembly: AssemblyTitleAttribute("FSharp.Object.Diff")>]
 [<assembly: AssemblyProductAttribute("FSharp.Obejct.Diff")>]
 [<assembly: InternalsVisibleToAttribute("FSharp.Object.Diff.Tests")>]
-[<assembly: AssemblyVersionAttribute("0.11.0")>]
-[<assembly: AssemblyFileVersionAttribute("0.11.0")>]
-[<assembly: AssemblyInformationalVersionAttribute("0.11.0-alpha1")>]
+[<assembly: AssemblyVersionAttribute("1.0.0")>]
+[<assembly: AssemblyFileVersionAttribute("1.0.0")>]
+[<assembly: AssemblyInformationalVersionAttribute("1.0.0")>]
 do ()
 
 module internal AssemblyVersionInformation =
     let [<Literal>] AssemblyTitle = "FSharp.Object.Diff"
     let [<Literal>] AssemblyProduct = "FSharp.Obejct.Diff"
     let [<Literal>] InternalsVisibleTo = "FSharp.Object.Diff.Tests"
-    let [<Literal>] AssemblyVersion = "0.11.0"
-    let [<Literal>] AssemblyFileVersion = "0.11.0"
-    let [<Literal>] AssemblyInformationalVersion = "0.11.0-alpha1"
+    let [<Literal>] AssemblyVersion = "1.0.0"
+    let [<Literal>] AssemblyFileVersion = "1.0.0"
+    let [<Literal>] AssemblyInformationalVersion = "1.0.0"
