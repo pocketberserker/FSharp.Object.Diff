@@ -58,12 +58,6 @@
   </Target>
   -->
   <ItemGroup>
-    <Content Include="net40\Foq.Usage.fsx">
-      <Paket>True</Paket>
-    </Content>
-    <Content Include="net45\Foq.Usage.fsx">
-      <Paket>True</Paket>
-    </Content>
     <None Include="paket.references" />
     <Content Include="App.config" />
     <Compile Include="StringsTest.fs" />
