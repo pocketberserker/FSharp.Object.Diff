@@ -44,7 +44,7 @@
     <file src="FSharp.Object.Diff.NET20/FSharp.Object.Diff.XML" target="lib/net20" />
     <file src="../src/FSharp.Object.Diff.NET40/bin/Release/net40/FSharp.Object.Diff.dll" target="lib/net40" />
     <file src="../src/FSharp.Object.Diff.NET45/bin/Release/net45/FSharp.Object.Diff.dll" target="lib/net45" />
-    <file src="../src/FSharp.Object.Diff.NETCore/bin/Release/netstandard1.6/FSharp.Object.Diff.dll" target="lib/netstandard16" />
+    <file src="../src/FSharp.Object.Diff.NETCore/bin/Release/netstandard1.6/FSharp.Object.Diff.dll" target="lib/netstandard1.6" />
     <file src="FSharp.Object.Diff.Portable7/FSharp.Object.Diff.dll" target="lib/portable45-net45+win8" />
     <file src="FSharp.Object.Diff.Portable7/FSharp.Object.Diff.XML" target="lib/portable45-net45+win8" />
     <file src="FSharp.Object.Diff.Portable78/FSharp.Object.Diff.dll" target="lib/portable45-net45+win8+wp8" />
