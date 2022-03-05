@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="StringsTest.fs" />
+    <Compile Include="TypeTest.fs" />
+    <Compile Include="CollectionTest.fs" />
+    <Compile Include="DictionaryTest.fs" />
+    <Compile Include="Mock.fs" />
+    <Compile Include="AccessorTest.fs" />
+    <Compile Include="NodePathTest.fs" />
+    <Compile Include="NodePathValueHolderTest.fs" />
+    <Compile Include="CategoryTest.fs" />
+    <Compile Include="CircularReferenceDetectorTest.fs" />
+    <Compile Include="EqualsIdentityStrategyTest.fs" />
+    <Compile Include="DiffNodeTest.fs" />
+    <Compile Include="DifferDispatcherTest.fs" />
+    <Compile Include="PrintingVisitorTest.fs" />
+    <Compile Include="PropertyAccessorTest.fs" />
+    <Compile Include="DifferProviderTest.fs" />
+    <Compile Include="BeanDifferTest.fs" />
+    <Compile Include="PrimitiveDifferTest.fs" />
+    <Compile Include="CollectionDifferTest.fs" />
+    <Compile Include="DictionaryDifferTest.fs" />
+    <Compile Include="StandardIntrospectorTest.fs" />
+    <Compile Include="InstancesTest.fs" />
+    <Compile Include="IntrospectionServiceTest.fs" />
+    <Compile Include="ComparisonServiceTest.fs" />
+    <Compile Include="ObjectDifferTest.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
+    <PackageReference Include="Persimmon" Version="5.0.1" />
+    <PackageReference Include="Persimmon.TestAdapter" Version="0.12.0-beta3" />
+    <PackageReference Include="Foq" Version="1.8.0" />
+    <ProjectReference Include="../../src/FSharp.Object.Diff/FSharp.Object.Diff.fsproj" />
+  </ItemGroup>
+</Project>
