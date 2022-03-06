@@ -85,3 +85,19 @@ type DictionaryKeyElementSelector(key: obj) =
     | _ -> false
 
   override __.GetHashCode() = if key <> null then key.GetHashCode() else 0
+
+[<Sealed>]
+type TupleItemElementSelector(propertyName: string, arity: int) =
+  inherit ElementSelector()
+
+  override __.HumanReadableString = string arity
+  member __.PropertyName = propertyName
+  member __.Arity = arity
+  override this.Equals(other) =
+    match other with
+    | null -> false
+    | :? TupleItemElementSelector as other ->
+      if obj.ReferenceEquals(this, other) then true
+      else this.PropertyName = other.PropertyName
+    | _ -> false
+  override __.GetHashCode() = hash propertyName

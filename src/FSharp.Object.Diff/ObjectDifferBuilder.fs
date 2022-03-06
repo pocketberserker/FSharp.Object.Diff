@@ -610,6 +610,9 @@ and ObjectDifferBuilder() as this =
   let newMapDiffer differDispatcher =
     DictionaryDiffer(differDispatcher, comparisonService)
 
+  let newTupleDiffer differDispatcher =
+    TupleDiffer(differDispatcher, introspectionService, returnableNodeService, comparisonService, introspectionService)
+
   let createCustomDiffers differDispatcher =
     let differs = ResizeArray<Differ>()
     differService.DifferFactories
@@ -637,6 +640,7 @@ and ObjectDifferBuilder() as this =
     differProvider.Push(newBeanDiffer differDispatcher)
     differProvider.Push(newCollectionDiffer differDispatcher)
     differProvider.Push(newMapDiffer differDispatcher)
+    differProvider.Push(newTupleDiffer differDispatcher)
     differProvider.Push(newPrimitiveDiffer ())
     differProvider.PushAll(createCustomDiffers differDispatcher)
     ObjectDiffer(differDispatcher)

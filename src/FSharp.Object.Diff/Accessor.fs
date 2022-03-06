@@ -219,6 +219,24 @@ type DictionaryEntryAccessor(referenceKey: obj) =
     member this.Set(target, value) = this.Set(target, value)
     member this.Unset(target) = this.Unset(target)
 
+type TupleItemAccessor = {
+  Accessor: PropertyAwareAccessor
+  N: int
+}
+with
+  member this.ElementSelector = TupleItemElementSelector(this.Accessor.PropertyName, this.N) :> ElementSelector
+  member this.Get(target) = this.Accessor.Get(target)
+  interface PropertyAwareAccessor with
+    member this.Type = this.Accessor.Type
+    member this.GetPropertyAttribute<'T when 'T :> Attribute and 'T : null>() = this.Accessor.GetPropertyAttribute<'T>()
+    member this.PropertyAttributes = this.Accessor.PropertyAttributes
+    member this.PropertyName = this.Accessor.PropertyName
+    member this.Set(target, value) = this.Accessor.Set(target, value)
+    member this.Unset(target) = this.Accessor.Unset(target)
+    member this.CategoriesFromAttribute = this.Accessor.CategoriesFromAttribute
+    member this.Get(target) = this.Get(target)
+    member this.ElementSelector = this.ElementSelector
+
 type Instances(sourceAccessor: Accessor, working: obj, base_: obj, fresh: obj) =
 
   let mutable parent: Instances option = None
