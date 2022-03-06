@@ -6,20 +6,13 @@ open System.Numerics
 open System.Text
 open System.Globalization
 open System.Reflection
-#if PCL || NETSTANDARD
 open System.Linq
-#endif
 
 [<RequireQualifiedAccess>]
 module Type =
 
   let isPrimitive (typ: Type) =
-    typ <> null &&
-    typ
-#if PCL || NETSTANDARD
-      .GetTypeInfo()
-#endif
-      .IsPrimitive
+    typ <> null && typ.GetTypeInfo().IsPrimitive
 
   let private simpleTypes = [
     typeof<Type>
@@ -45,22 +38,12 @@ module Type =
     else simpleTypes |> List.exists ((=) typ)
 
   let isAssignableFrom (a: Type) (b: Type) =
-    a
-#if PCL || NETSTANDARD
-      .GetTypeInfo().IsAssignableFrom(b.GetTypeInfo())
-#else
-      .IsAssignableFrom(b)
-#endif
+    a.GetTypeInfo().IsAssignableFrom(b.GetTypeInfo())
 
   let isComparable typ = isAssignableFrom typeof<IComparable> typ
 
   let private baseType (typ: Type) =
-    typ
-#if PCL || NETSTANDARD
-      .GetTypeInfo().BaseType
-#else
-      .BaseType
-#endif
+    typ.GetTypeInfo().BaseType
 
   let private superclassesOf (types: Type seq) =
     let rec inner acc s = function
@@ -75,127 +58,66 @@ module Type =
     |> inner [] None
     |> Seq.distinct
 
-  let  mostSpecificSharedType (types: Type seq) =
-    let sharedTypes =
-      seq { yield! superclassesOf(types); yield! types }
-      |> Seq.distinct
-      |> Seq.fold (fun acc potentiallySharedType ->
-        if types |> Seq.filter (isAssignableFrom potentiallySharedType) |> Seq.length = Seq.length types then
-          potentiallySharedType :: acc
-        else acc
-      ) []
-      |> Seq.distinct
-      |> Seq.toList
-      |> List.sortWith (fun o1 o2 ->
-        if isAssignableFrom o1 o2 then 1
-        elif isAssignableFrom o2 o1 then -1
-        else 0
-      )
-    if Seq.isEmpty sharedTypes then None
-    else sharedTypes |> Seq.head |> Some
+  let mostSpecificSharedType (types: Type seq) =
+    seq { yield! superclassesOf(types); yield! types }
+    |> Seq.distinct
+    |> Seq.fold (fun acc potentiallySharedType ->
+      if types |> Seq.filter (isAssignableFrom potentiallySharedType) |> Seq.length = Seq.length types then
+        potentiallySharedType :: acc
+      else acc
+    ) []
+    |> Seq.distinct
+    |> Seq.toList
+    |> List.sortWith (fun o1 o2 ->
+      if isAssignableFrom o1 o2 then 1
+      elif isAssignableFrom o2 o1 then -1
+      else 0
+    )
+    |> Seq.tryHead
 
   let getMethod name (typ: Type) =
-    typ
-#if PCL || NETSTANDARD
-      .GetTypeInfo().GetDeclaredMethod(name)
-#else
-      .GetMethod(name)
-#endif
+    typ.GetTypeInfo().GetDeclaredMethod(name)
 
   let getProperty name (typ: Type) =
-    typ
-#if PCL || NETSTANDARD
-      .GetTypeInfo().GetDeclaredProperty(name)
-#else
-      .GetProperty(name)
-#endif
+    typ.GetTypeInfo().GetDeclaredProperty(name)
 
   let isGenericType (typ: Type) =
-    typ
-#if PCL || NETSTANDARD
-      .GetTypeInfo().IsGenericType
-#else
-      .IsGenericType
-#endif
+    typ.GetTypeInfo().IsGenericType
 
   let getGenericArguments (typ: Type) =
-    typ
-#if PCL || NETSTANDARD
-      .GetTypeInfo().GetGenericParameterConstraints()
-#else
-      .GetGenericArguments()
-#endif
+    typ.GetTypeInfo().GetGenericArguments()
 
   let getProperties (typ: Type) =
-    typ
-#if PCL || NETSTANDARD
-      .GetTypeInfo().DeclaredProperties
+    typ.GetTypeInfo().DeclaredProperties
     |> Seq.toArray
-#else
-      .GetProperties()
-#endif
 
   let getNonArgConstructor (t: Type) =
     t
-#if PCL || NETSTANDARD
       .GetTypeInfo().DeclaredConstructors
       .Where(fun x -> Array.isEmpty <| x.GetParameters())
       .FirstOrDefault()
-#else
-      .GetConstructor(BindingFlags.Public ||| BindingFlags.NonPublic, null, [||], null)
-#endif
 
   let isEnum (t: Type) =
-    t
-#if PCL || NETSTANDARD
-      .GetTypeInfo().IsEnum
-#else
-      .IsEnum
-#endif
+    t.GetTypeInfo().IsEnum
 
   let getCustomAttributes<'T when 'T :> Attribute> inherit' (t: Type) =
-    t
-#if PCL || NETSTANDARD
-      .GetTypeInfo().GetCustomAttributes<'T>(inherit')
+    t.GetTypeInfo().GetCustomAttributes<'T>(inherit')
     |> Seq.toArray
-#else
-      .GetCustomAttributes(typeof<'T>, inherit')
-    |> Array.map (fun x -> x :?> 'T)
-#endif
 
 [<RequireQualifiedAccess>]
 module PropertyInfo =
 
   let getGetMethod (info: PropertyInfo) =
-    info
-#if PCL || NETSTANDARD
-      .GetMethod
-#else
-      .GetGetMethod()
-#endif
+    info.GetMethod
 
   let getSetMethod (info: PropertyInfo) =
-    info
-#if PCL || NETSTANDARD
-      .SetMethod
-#else
-      .GetSetMethod()
-#endif
+    info.SetMethod
 
   let getCustomAttributes (info: PropertyInfo) =
-#if PCL || NETSTANDARD
     info.GetCustomAttributes()
-#else
-    Attribute.GetCustomAttributes(info)
-    |> Array.toSeq
-#endif
 
   let getCustomAttribute<'T when 'T :> Attribute> (info: PropertyInfo) =
-#if PCL || NETSTANDARD
     info.GetCustomAttribute<'T>()
-#else
-    Attribute.GetCustomAttribute(info, typeof<'T>) :?> 'T
-#endif
 
 type Type with
 
@@ -207,19 +129,18 @@ type Type with
     |> Array.toSeq
     |> Seq.distinct
 
-  static member FreshInstanceOf<'T>() =
+  member this.FreshInstanceOf() =
     let ctor =
       try
-        Type.getNonArgConstructor typeof<'T>
+        Type.getNonArgConstructor this
       with _ -> null
-    if ctor <> null then ctor.Invoke([||])
+    if ctor <> null then
+      try
+        ctor.Invoke([||])
+      with _ -> null
     else null
 
   member this.AllAssignableFrom(types: Type seq) =
     types |> Seq.forall (fun t ->
-#if PCL || NETSTANDARD
       this.GetTypeInfo().IsAssignableFrom(t.GetTypeInfo())
-#else
-      this.IsAssignableFrom(t)
-#endif
     )

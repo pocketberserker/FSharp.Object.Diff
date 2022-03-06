@@ -60,13 +60,15 @@ module Dictionary =
       if t = null then None
       elif Type.isGenericType t then
         let ps = Type.getGenericArguments t
-        if Array.length ps = 2 then
-          let idict = idict.MakeGenericType(ps)
+        let length = Array.length ps
+        if Array.length ps >= 2 then
+          // if generic parameters count equal 3, then this type consider to be `DictImpl` and skip first generic parameter
+          // https://github.com/dotnet/fsharp/blob/2a885b3209072c4bdc35cfc9fa45bb707f9e6af8/src/fsharp/FSharp.Core/fslib-extra-pervasives.fs#L45
+          let idict = idict.MakeGenericType(ps |> Array.skip (length - 2) |> Array.take 2)
           if Type.isAssignableFrom idict t then Some idict
           else None
         else None
       else None
-
 
   let tryFindAllAssignable xs =
     xs
