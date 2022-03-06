@@ -1,3 +1,8 @@
+### 2.0.0 - March 6 2022
+- support netstandard2.0 or higher
+- drop PCL, netstandard1.6 and net4.5 or lower
+- update FSharp.Core(5.0.0)
+
 ### 1.0.0 - April 7 2017
 - support .NET Core
 - return obj type when instances have different types
