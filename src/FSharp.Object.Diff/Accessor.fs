@@ -82,15 +82,15 @@ type CollectionItemAccessor(referenceItem: obj, index: int option, identityStrat
       else None
 
     match objectAsCollection target with
-    | Ok None -> Choice1Of2 None
+    | Ok None -> Ok None
     | Ok(Some(NonGenericCollection cs)) ->
       match index with
       | Some index when index < cs.Count -> Some cs.[index]
       | Some _ -> None
       | _ -> cs.GetEnumerator() |> inner None 0
-      |> Choice1Of2
+      |> Ok
     | Ok(Some(MutableGenericCollection(cs, t) | ImmutableGenericCollection(cs, t))) ->
-      Choice1Of2 <|
+      Ok <|
       match Collection.IList.cast t with
       | Some _ ->
         match index with
@@ -107,14 +107,14 @@ type CollectionItemAccessor(referenceItem: obj, index: int option, identityStrat
       | Some index when index < Collection.FSharpList.length t cs -> Collection.FSharpList.item t index cs |> Some
       | Some _ -> None
       | _ -> (cs :?> IEnumerable).GetEnumerator() |> inner None 0
-      |> Choice1Of2
-    | Error e -> Choice2Of2 e
+      |> Ok
+    | Error e -> Error e
 
   member this.Get(target: obj) =
     match this.TryGet(target) with
-    | Choice1Of2 None -> null
-    | Choice1Of2(Some v) -> v
-    | Choice2Of2 e -> raise e
+    | Ok None -> null
+    | Ok(Some v) -> v
+    | Error e -> raise e
 
   member __.Unset(target: obj) =
     match objectAsCollection target with
