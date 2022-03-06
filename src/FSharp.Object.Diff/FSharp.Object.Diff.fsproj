@@ -1,8 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <Version>1.0.0</Version>
     <AssemblyName>FSharp.Object.Diff</AssemblyName>
     <TargetFramework>netstandard2.0</TargetFramework>
     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+    <authors>pocketberserker</authors>
+    <owners>pocketberserker</owners>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <licenseUrl>https://github.com/pocketberserker/FSharp.Object.Diff/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/pocketberserker/FSharp.Object.Diff</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>FSharp.Object.Diff is a port of java-object-diff.</description>
+    <tags>F# fsharp diff object</tags>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CommonAssemblyInfo.fs" />
@@ -32,6 +41,7 @@
     <Compile Include="NodeQueryService.fs" />
     <Compile Include="ObjectDifferBuilder.fs" />
     <Compile Include="ObjectMerger.fs" />
+    <None Include="../../README.md" Pack="true" PackagePath="/"/>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FSharp.Core" Version="5.0.0" />
