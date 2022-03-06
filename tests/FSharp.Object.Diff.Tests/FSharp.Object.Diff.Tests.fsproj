@@ -24,6 +24,7 @@
     <Compile Include="PrimitiveDifferTest.fs" />
     <Compile Include="CollectionDifferTest.fs" />
     <Compile Include="DictionaryDifferTest.fs" />
+    <Compile Include="TupleDifferTest.fs" />
     <Compile Include="StandardIntrospectorTest.fs" />
     <Compile Include="InstancesTest.fs" />
     <Compile Include="IntrospectionServiceTest.fs" />

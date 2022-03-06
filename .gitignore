@@ -190,3 +190,5 @@ paket-files
 .fake/
 .vs/
 project.lock.json
+
+.ionide

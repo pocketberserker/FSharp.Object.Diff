@@ -185,7 +185,7 @@ with
       |> Array.iter (fun x ->
         if x.CanRead then
           let r = PropertyInfo.getGetMethod x
-          if Array.isEmpty <| r.GetParameters() && not <| r.IsStatic then
+          if Array.isEmpty <| r.GetParameters() && not <| r.IsStatic && r.IsPublic then
             typeInfo.AddPropertyAccessor(PropertyAccessor(x))
       )
       typeInfo

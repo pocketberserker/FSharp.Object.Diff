@@ -4,6 +4,7 @@ open System
 open System.Collections
 open System.Collections.Generic
 open System.Threading
+open FSharp.Reflection
 
 [<AllowNullLiteral>]
 type Differ =
@@ -462,4 +463,50 @@ type DictionaryDiffer(differDispatcher: DifferDispatcher, comparisonStrategyReso
 
     member this.Accepts(typ: Type) = this.Accepts(typ)
 
+    member this.Compare(parentNode, instances) = this.Compare(parentNode, instances)
+
+[<Sealed>]
+type TupleDiffer(
+                 differDispatcher: DifferDispatcher,
+                 isIntrospectableResolver: IsIntrospectableResolver,
+                 isReturnableResolver: IsReturnableResolver,
+                 comparisonStrategyResolver: ComparisonStrategyResolver,
+                 typeInfoResolver: TypeInfoResolver
+  ) =
+
+  let compareUsingIntrospection (node: DiffNode) (beanInstances: Instances) =
+    let typeInfo = typeInfoResolver.TypeInfoForNode(node)
+    node.TypeInfo <- typeInfo
+    typeInfo.Accessors
+    |> List.iteri (fun index accessor ->
+      let arity = index + 1
+      let propertyNode = differDispatcher.Dispatch(node, beanInstances, { Accessor = accessor; N = arity })
+      if isReturnableResolver.IsReturnable(propertyNode) then
+        node.AddChild(propertyNode)
+    )
+
+  let compareUsingAppropriateMethod (node: DiffNode) (instances: Instances) =
+    let comparisonStrategy = comparisonStrategyResolver.ResolveComparisonStrategy(node)
+    if comparisonStrategy <> null then
+     comparisonStrategy.Compare(node, instances.Type, instances.Working, instances.Base)
+    elif isIntrospectableResolver.IsIntrospectable(node) then
+      compareUsingIntrospection node instances
+
+  member __.Accepts(typ: Type) = FSharpType.IsTuple(typ)
+
+  member __.Compare(parentNode, instances: Instances) =
+    let node = DiffNode(parentNode, instances.SourceAccessor, instances.Type)
+    if instances.AreNull || instances.AreSame then
+      node.State <- Untouched
+    elif instances.HasBeenAdded then
+      compareUsingAppropriateMethod node instances
+      node.State <- Added
+    elif instances.HasBeenRemoved then
+      compareUsingAppropriateMethod node instances
+      node.State <- Removed
+    else compareUsingAppropriateMethod node instances
+    node
+
+  interface Differ with
+    member this.Accepts(typ: Type) = this.Accepts(typ)
     member this.Compare(parentNode, instances) = this.Compare(parentNode, instances)
