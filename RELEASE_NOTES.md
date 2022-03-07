@@ -1,3 +1,6 @@
+### 2.1.0 - March 7 2022
+- add tuple differ
+
 ### 2.0.0 - March 6 2022
 - support netstandard2.0 or higher
 - drop PCL, netstandard1.6 and net4.5 or lower
